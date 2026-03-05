@@ -1,24 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Filter, Download, RefreshCw } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TransactionList from './components/TransactionList';
+import type { SupabaseTransaction } from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
 import StatCard from './components/StatCard';
-import { mockTransactions } from './data/mockTransactions';
+import { supabase } from './supabaseClient';
 import { AlertTriangle, FileCheck, TrendingUp } from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('alerts');
+  const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
+  async function fetchTransactions() {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('transaction_date', { ascending: false });
 
-  const highRiskCount = mockTransactions.filter(t => t.riskScore >= 80).length;
-  const pendingReviewCount = mockTransactions.filter(t => t.status === 'pending').length;
-  const avgRiskScore = Math.round(
-    mockTransactions.reduce((sum, t) => sum + t.riskScore, 0) / mockTransactions.length
-  );
+    if (!error && data) {
+      setTransactions(data);
+    }
+  }
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const highRiskCount = transactions.filter(t => t.risk_score >= 80).length;
+  const pendingReviewCount = transactions.filter(t => t.is_flagged).length;
+  const avgRiskScore = transactions.length
+    ? Math.round(transactions.reduce((sum, t) => sum + t.risk_score, 0) / transactions.length)
+    : 0;
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <main className="flex-1 overflow-auto">
         <div className="p-8">
@@ -43,7 +59,7 @@ function App() {
                   <Download className="w-4 h-4" />
                   <span>Export</span>
                 </button>
-                <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20">
+                <button onClick={fetchTransactions} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20">
                   <RefreshCw className="w-4 h-4" />
                   <span>Refresh</span>
                 </button>
@@ -78,18 +94,18 @@ function App() {
           {activeTab === 'alerts' && (
             <div className="space-y-8">
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-white">Flagged Transactions</h3>
-                  <span className="text-sm text-slate-400">
-                    Showing {mockTransactions.length} transactions
-                  </span>
-                </div>
-                <TransactionList transactions={mockTransactions} />
+                <h3 className="text-xl font-semibold text-white mb-4">Network Analysis</h3>
+                <NetworkGraph transactions={transactions} />
               </div>
 
               <div>
-                <h3 className="text-xl font-semibold text-white mb-4">Network Analysis</h3>
-                <NetworkGraph />
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-white">Flagged Transactions</h3>
+                  <span className="text-sm text-slate-400">
+                    Showing {transactions.length} transactions
+                  </span>
+                </div>
+                <TransactionList transactions={transactions} />
               </div>
             </div>
           )}

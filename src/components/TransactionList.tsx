@@ -1,155 +1,196 @@
-import { AlertCircle, TrendingUp, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { AlertTriangle, Loader2, Brain } from 'lucide-react';
+import { supabase } from '../supabaseClient';
+import { analyzeTransaction } from '../services/aiAnalysis';
+import AiModal from './AiModal';
 
-interface Transaction {
-  id: string;
-  accountNumber: string;
+export interface SupabaseTransaction {
+  id: number;
+  sender_account: string;
+  receiver_account: string;
   amount: number;
   currency: string;
-  timestamp: string;
-  riskScore: number;
-  flags: string[];
-  counterparty: string;
-  type: string;
+  transaction_date: string;
+  risk_score: number;
+  is_flagged: boolean;
+  transaction_type: string;
 }
 
-const mockTransactions: Transaction[] = [
-  {
-    id: 'TXN-2024-001',
-    accountNumber: '****7892',
-    amount: 125000,
-    currency: 'USD',
-    timestamp: '2024-03-05 14:23:17',
-    riskScore: 87,
-    flags: ['Rapid Movement', 'High Value'],
-    counterparty: 'Offshore Entity Ltd.',
-    type: 'Wire Transfer',
-  },
-  {
-    id: 'TXN-2024-002',
-    accountNumber: '****3421',
-    amount: 45000,
-    currency: 'EUR',
-    timestamp: '2024-03-05 13:45:33',
-    riskScore: 72,
-    flags: ['Structuring', 'Round Amount'],
-    counterparty: 'Shell Corp Inc.',
-    type: 'International Transfer',
-  },
-  {
-    id: 'TXN-2024-003',
-    accountNumber: '****9156',
-    amount: 89500,
-    currency: 'USD',
-    timestamp: '2024-03-05 12:11:08',
-    riskScore: 94,
-    flags: ['PEP Connection', 'High Value', 'Unusual Pattern'],
-    counterparty: 'Global Trade LLC',
-    type: 'Cash Deposit',
-  },
-  {
-    id: 'TXN-2024-004',
-    accountNumber: '****6734',
-    amount: 31000,
-    currency: 'GBP',
-    timestamp: '2024-03-05 11:34:52',
-    riskScore: 65,
-    flags: ['Geographic Risk'],
-    counterparty: 'Import Export Co.',
-    type: 'Wire Transfer',
-  },
-  {
-    id: 'TXN-2024-005',
-    accountNumber: '****2189',
-    amount: 156000,
-    currency: 'USD',
-    timestamp: '2024-03-05 10:08:24',
-    riskScore: 81,
-    flags: ['High Value', 'New Relationship'],
-    counterparty: 'Investment Holdings SA',
-    type: 'International Transfer',
-  },
-];
+interface TransactionListProps {
+  transactions?: SupabaseTransaction[];
+}
 
-export default function TransactionList() {
+interface ModalState {
+  transaction: SupabaseTransaction;
+  summary: string;
+}
+
+export default function TransactionList({ transactions: propTransactions }: TransactionListProps) {
+  const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [analyzingId, setAnalyzingId] = useState<number | null>(null);
+  const [modal, setModal] = useState<ModalState | null>(null);
+
+  async function handleAnalyze(tx: SupabaseTransaction) {
+    setAnalyzingId(tx.id);
+    try {
+      const summary = await analyzeTransaction(tx);
+      setModal({ transaction: tx, summary });
+    } catch (err: any) {
+      alert('AI analysis failed: ' + err.message);
+    } finally {
+      setAnalyzingId(null);
+    }
+  }
+
+  useEffect(() => {
+    if (propTransactions) {
+      setTransactions(propTransactions);
+      setLoading(false);
+      return;
+    }
+    fetchTransactions();
+  }, [propTransactions]);
+
+  async function fetchTransactions() {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('transaction_date', { ascending: false });
+
+      if (error) throw error;
+      setTransactions(data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   const getRiskColor = (score: number) => {
-    if (score >= 80) return 'text-red-400 bg-red-500/10 border-red-500/20';
-    if (score >= 60) return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
-    return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+    if (score >= 80) return 'text-red-400';
+    if (score >= 60) return 'text-orange-400';
+    return 'text-green-400';
   };
 
-  const getRiskLabel = (score: number) => {
-    if (score >= 80) return 'Critical';
-    if (score >= 60) return 'High';
-    return 'Medium';
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
+        <span className="ml-3 text-slate-400">Loading transactions…</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
+        <p className="text-red-400 font-medium">Failed to load transactions</p>
+        <p className="text-sm text-red-400/70 mt-1">{error}</p>
+      </div>
+    );
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
+        <p className="text-slate-400">No transactions found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-1">Flagged Transactions</h2>
-          <p className="text-slate-400">Real-time suspicious activity monitoring</p>
-        </div>
-        <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-lg">
-          <Clock className="w-4 h-4 text-slate-400" />
-          <span className="text-sm text-slate-300">Last updated: 2 mins ago</span>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {mockTransactions.map((transaction) => (
-          <div
-            key={transaction.id}
-            className="bg-slate-800/50 border border-slate-700 rounded-lg p-5 hover:bg-slate-800 transition-all hover:border-slate-600"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-blue-400 font-mono font-semibold">{transaction.id}</span>
-                  <span className="text-slate-500">•</span>
-                  <span className="text-slate-300">{transaction.type}</span>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-slate-400">
-                  <span>Account: {transaction.accountNumber}</span>
-                  <span>•</span>
-                  <span>{transaction.timestamp}</span>
-                </div>
-              </div>
-              <div className={`px-4 py-2 rounded-lg border ${getRiskColor(transaction.riskScore)}`}>
-                <div className="text-xs font-semibold mb-1">{getRiskLabel(transaction.riskScore)}</div>
-                <div className="text-2xl font-bold">{transaction.riskScore}</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-slate-700">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Amount</p>
-                <p className="text-lg font-semibold text-white">
-                  {transaction.amount.toLocaleString()} {transaction.currency}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Counterparty</p>
-                <p className="text-lg font-semibold text-white">{transaction.counterparty}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-orange-400" />
-              <div className="flex gap-2 flex-wrap">
-                {transaction.flags.map((flag, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-slate-900 border border-slate-600 rounded-full text-xs text-slate-300"
-                  >
-                    {flag}
+  <>
+    <div className="overflow-x-auto rounded-lg border border-slate-700">
+      <table className="w-full text-sm text-left">
+        <thead className="bg-slate-800/80 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+          <tr>
+            <th className="px-4 py-3">ID</th>
+            <th className="px-4 py-3">Type</th>
+            <th className="px-4 py-3">Sender</th>
+            <th className="px-4 py-3">Receiver</th>
+            <th className="px-4 py-3 text-right">Amount</th>
+            <th className="px-4 py-3">Currency</th>
+            <th className="px-4 py-3">Date</th>
+            <th className="px-4 py-3 text-center">Risk</th>
+            <th className="px-4 py-3 text-center">Flagged</th>
+            <th className="px-4 py-3 text-center">Analyze</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-700/50">
+          {transactions.map((tx) => (
+            <tr
+              key={tx.id}
+              className={`transition-colors hover:bg-slate-800/60 ${
+                tx.is_flagged
+                  ? 'bg-red-500/5 border-l-2 border-l-red-500'
+                  : 'bg-slate-900/30'
+              }`}
+            >
+              <td className="px-4 py-3 font-mono text-blue-400 font-medium">{tx.id}</td>
+              <td className="px-4 py-3 text-slate-300 capitalize">{tx.transaction_type}</td>
+              <td className="px-4 py-3 font-mono text-slate-300 text-xs">{tx.sender_account}</td>
+              <td className="px-4 py-3 font-mono text-slate-300 text-xs">{tx.receiver_account}</td>
+              <td className="px-4 py-3 text-right font-semibold text-white">
+                {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </td>
+              <td className="px-4 py-3 text-slate-400">{tx.currency}</td>
+              <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{formatDate(tx.transaction_date)}</td>
+              <td className="px-4 py-3 text-center">
+                <span className={`font-bold ${getRiskColor(tx.risk_score)}`}>
+                  {tx.risk_score}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-center">
+                {tx.is_flagged ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-xs font-medium">
+                    <AlertTriangle className="w-3 h-3" />
+                    Yes
                   </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                ) : (
+                  <span className="text-slate-500 text-xs">No</span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-center">
+                <button
+                  onClick={() => handleAnalyze(tx)}
+                  disabled={analyzingId === tx.id}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 border border-purple-500/20"
+                >
+                  {analyzingId === tx.id ? (
+                    <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing…</>
+                  ) : (
+                    <><Brain className="w-3 h-3" /> AI Analyze</>
+                  )}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
+
+    {modal && (
+      <AiModal
+        transaction={modal.transaction}
+        summary={modal.summary}
+        onClose={() => setModal(null)}
+      />
+    )}
+  </>
   );
 }

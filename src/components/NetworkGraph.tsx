@@ -1,127 +1,202 @@
-import { Network, Users, ArrowRight } from 'lucide-react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  type Node,
+  type Edge,
+  type NodeTypes,
+  type OnNodesChange,
+  type OnEdgesChange,
+  Handle,
+  Position,
+  applyNodeChanges,
+  applyEdgeChanges,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import type { SupabaseTransaction } from './TransactionList';
 
-export default function NetworkGraph() {
+interface NetworkGraphProps {
+  transactions: SupabaseTransaction[];
+}
+
+interface AccountNodeData {
+  label: string;
+  isHighRisk: boolean;
+  connectionCount: number;
+  [key: string]: unknown;
+}
+
+function AccountNode({ data }: { data: AccountNodeData }) {
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-xl font-bold text-white mb-1">Transaction Network</h3>
-          <p className="text-sm text-slate-400">Entity relationship visualization</p>
-        </div>
-        <div className="flex items-center gap-2 text-slate-400">
-          <Users className="w-4 h-4" />
-          <span className="text-sm">12 entities • 28 connections</span>
-        </div>
+    <div
+      className={`px-3 py-2 rounded-lg shadow-lg text-center min-w-[120px] border-2 ${
+        data.isHighRisk
+          ? 'bg-red-950/80 border-red-500 shadow-red-500/20'
+          : 'bg-slate-800 border-slate-600 shadow-slate-900/40'
+      }`}
+    >
+      <Handle type="target" position={Position.Left} className="!bg-slate-500 !w-2 !h-2" />
+      <div className={`text-xs font-mono font-semibold truncate ${data.isHighRisk ? 'text-red-300' : 'text-blue-300'}`}>
+        {data.label}
       </div>
-
-      <div className="relative bg-slate-900 rounded-lg border border-slate-700 h-96 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5"></div>
-
-        <div className="relative z-10 grid grid-cols-3 gap-8 w-full h-full p-8">
-          <div className="flex flex-col justify-center items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-4 border-slate-900 shadow-lg shadow-blue-500/30 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A1</span>
-            </div>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 border-4 border-slate-900 shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A2</span>
-            </div>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 border-4 border-slate-900 shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">A3</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-red-500 to-red-600 border-4 border-slate-900 shadow-lg shadow-red-500/30 flex items-center justify-center animate-pulse">
-                <span className="text-white font-bold">HUB</span>
-              </div>
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-orange-500 rounded-full border-2 border-slate-900 flex items-center justify-center">
-                <AlertCircle className="w-3 h-3 text-white" />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-center items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 border-4 border-slate-900 shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">B1</span>
-            </div>
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 border-4 border-slate-900 shadow-lg shadow-orange-500/30 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">B2</span>
-            </div>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-600 to-slate-700 border-4 border-slate-900 shadow-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xs">B3</span>
-            </div>
-          </div>
-        </div>
-
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
-          <defs>
-            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0.6" />
-            </linearGradient>
-          </defs>
-          <line x1="30%" y1="30%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-          <line x1="30%" y1="50%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-          <line x1="30%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-          <line x1="70%" y1="30%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-          <line x1="70%" y1="50%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-          <line x1="70%" y1="70%" x2="50%" y2="50%" stroke="url(#lineGradient)" strokeWidth="2" strokeDasharray="5,5" />
-        </svg>
-
-        <div className="absolute bottom-4 left-4 flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span className="text-slate-400">Source Account</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-slate-400">Flagged Hub</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-            <span className="text-slate-400">High Risk</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-slate-600"></div>
-            <span className="text-slate-400">Related Entity</span>
-          </div>
-        </div>
+      <div className="text-[10px] text-slate-400 mt-0.5">
+        {data.connectionCount} txn{data.connectionCount !== 1 ? 's' : ''}
       </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-4">
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-2 mb-2">
-            <Network className="w-4 h-4 text-blue-400" />
-            <span className="text-xs text-slate-400">Network Depth</span>
-          </div>
-          <p className="text-2xl font-bold text-white">3 levels</p>
-        </div>
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-2 mb-2">
-            <ArrowRight className="w-4 h-4 text-cyan-400" />
-            <span className="text-xs text-slate-400">Transactions</span>
-          </div>
-          <p className="text-2xl font-bold text-white">$2.4M</p>
-        </div>
-        <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-green-400" />
-            <span className="text-xs text-slate-400">Connected Entities</span>
-          </div>
-          <p className="text-2xl font-bold text-white">12</p>
-        </div>
-      </div>
+      <Handle type="source" position={Position.Right} className="!bg-slate-500 !w-2 !h-2" />
     </div>
   );
 }
 
-function AlertCircle({ className }: { className?: string }) {
+const nodeTypes: NodeTypes = { account: AccountNode };
+
+function buildGraph(transactions: SupabaseTransaction[]) {
+  const accountSet = new Map<string, { connectionCount: number; maxRisk: number }>();
+
+  for (const tx of transactions) {
+    const s = accountSet.get(tx.sender_account) || { connectionCount: 0, maxRisk: 0 };
+    s.connectionCount++;
+    s.maxRisk = Math.max(s.maxRisk, tx.risk_score);
+    accountSet.set(tx.sender_account, s);
+
+    const r = accountSet.get(tx.receiver_account) || { connectionCount: 0, maxRisk: 0 };
+    r.connectionCount++;
+    r.maxRisk = Math.max(r.maxRisk, tx.risk_score);
+    accountSet.set(tx.receiver_account, r);
+  }
+
+  const accounts = Array.from(accountSet.entries());
+  const count = accounts.length;
+  const cx = 400;
+  const cy = 250;
+  const rx = Math.max(200, count * 30);
+  const ry = Math.max(150, count * 22);
+
+  const nodes: Node[] = accounts.map(([account, info], i) => {
+    const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+    return {
+      id: account,
+      type: 'account',
+      position: { x: cx + rx * Math.cos(angle) - 60, y: cy + ry * Math.sin(angle) - 20 },
+      data: {
+        label: account,
+        isHighRisk: info.maxRisk > 80,
+        connectionCount: info.connectionCount,
+      } satisfies AccountNodeData,
+    };
+  });
+
+  const edges: Edge[] = transactions.map((tx) => ({
+    id: `e-${tx.id}`,
+    source: tx.sender_account,
+    target: tx.receiver_account,
+    animated: tx.risk_score > 80,
+    style: {
+      stroke: tx.risk_score > 80 ? '#ef4444' : tx.risk_score > 60 ? '#f97316' : '#475569',
+      strokeWidth: Math.max(1.5, Math.min(4, tx.amount / 50000)),
+    },
+    label: `${tx.amount.toLocaleString()} ${tx.currency}`,
+    labelStyle: { fill: '#94a3b8', fontSize: 10 },
+    labelBgStyle: { fill: '#0f172a', fillOpacity: 0.85 },
+    labelBgPadding: [4, 2] as [number, number],
+    markerEnd: { type: 'arrowclosed' as const, color: tx.risk_score > 80 ? '#ef4444' : '#475569' },
+  }));
+
+  return { nodes, edges };
+}
+
+export default function NetworkGraph({ transactions }: NetworkGraphProps) {
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  useEffect(() => {
+    const { nodes: n, edges: e } = buildGraph(transactions);
+    setNodes(n);
+    setEdges(e);
+  }, [transactions]);
+
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    []
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
+
+  const uniqueAccounts = useMemo(() => {
+    const set = new Set<string>();
+    transactions.forEach((tx) => {
+      set.add(tx.sender_account);
+      set.add(tx.receiver_account);
+    });
+    return set.size;
+  }, [transactions]);
+
+  const highRiskNodes = useMemo(() => {
+    const set = new Set<string>();
+    transactions.filter(tx => tx.risk_score > 80).forEach(tx => {
+      set.add(tx.sender_account);
+      set.add(tx.receiver_account);
+    });
+    return set.size;
+  }, [transactions]);
+
+  if (transactions.length === 0) {
+    return (
+      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
+        <p className="text-slate-400">No transaction data to visualize.</p>
+      </div>
+    );
+  }
+
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="12" y1="16" x2="12.01" y2="16" />
-    </svg>
+    <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+        <div>
+          <h3 className="text-lg font-bold text-white">Transaction Network</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            {uniqueAccounts} accounts &middot; {transactions.length} transactions &middot;{' '}
+            <span className="text-red-400">{highRiskNodes} high-risk nodes</span>
+          </p>
+        </div>
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-950"></div>
+            <span className="text-slate-400">Risk &gt; 80</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-slate-600 bg-slate-800"></div>
+            <span className="text-slate-400">Normal</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-0.5 bg-red-500"></div>
+            <span className="text-slate-400">High risk edge</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 520 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.3 }}
+          proOptions={{ hideAttribution: true }}
+          style={{ background: '#0f172a' }}
+          minZoom={0.3}
+          maxZoom={2}
+        >
+          <Background color="#1e293b" gap={20} />
+          <Controls
+            showInteractive={false}
+            className="!bg-slate-800 !border-slate-700 !shadow-xl [&>button]:!bg-slate-800 [&>button]:!border-slate-700 [&>button]:!text-slate-300 [&>button:hover]:!bg-slate-700"
+          />
+        </ReactFlow>
+      </div>
+    </div>
   );
 }
