@@ -196,8 +196,21 @@ export default function LandingPage({ onEnterDemo }: LandingPageProps) {
             })}
           </div>
 
-          {/* Screenshot placeholder — shows a preview of the dashboard */}
-          <div className="relative rounded-xl border border-slate-700 overflow-hidden shadow-2xl shadow-black/40 mb-16">
+          {/* Dashboard preview — clickable to enter demo */}
+          <div
+            onClick={onEnterDemo}
+            className="group relative rounded-xl border border-slate-700 overflow-hidden shadow-2xl shadow-black/40 mb-16 cursor-pointer"
+          >
+            {/* Hover overlay */}
+            <div className="absolute inset-0 z-10 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-6 py-3 bg-blue-600 rounded-xl text-white font-semibold shadow-xl">
+                <ArrowRight className="w-5 h-5" />
+                Enter Live Demo
+              </div>
+            </div>
+            <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-600/50 text-[10px] text-slate-400 uppercase tracking-wider">
+              Preview
+            </div>
             <div className="bg-slate-900 px-4 py-2.5 border-b border-slate-700 flex items-center gap-2">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -236,15 +249,18 @@ export default function LandingPage({ onEnterDemo }: LandingPageProps) {
               </div>
               <div className="space-y-2">
                 {[
-                  { risk: 87, flagged: true },
-                  { risk: 42, flagged: false },
-                  { risk: 91, flagged: true },
+                  { risk: 87, flagged: true, type: 'WIRE_TRANSFER', amount: '€69,000' },
+                  { risk: 42, flagged: false, type: 'TAX_PAYMENT', amount: '€14,818' },
+                  { risk: 91, flagged: true, type: 'WIRE_TRANSFER', amount: '€125,400' },
                 ].map((row, i) => (
                   <div key={i} className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-xs ${row.flagged ? 'bg-red-500/5 border border-red-500/20' : 'bg-slate-800/40 border border-slate-700/50'}`}>
                     <span className="text-slate-400 font-mono">TXN-{1000 + i}</span>
-                    <span className="text-slate-300">WIRE_TRANSFER</span>
+                    <span className="text-slate-300">{row.type}</span>
+                    <span className="text-slate-400">{row.amount}</span>
                     <span className={`font-bold ${row.risk >= 80 ? 'text-red-400' : 'text-green-400'}`}>{row.risk}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 text-[10px]">AI Analyze</span>
+                    {row.flagged && (
+                      <span className="text-red-400/60 text-[10px]">Flagged</span>
+                    )}
                   </div>
                 ))}
               </div>
