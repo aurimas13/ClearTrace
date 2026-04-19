@@ -6,11 +6,14 @@ import type { SupabaseTransaction } from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
 import StatCard from './components/StatCard';
 import LandingPage from './components/LandingPage';
+import CaseStudy from './components/CaseStudy';
 import { supabase } from './supabaseClient';
 import { AlertTriangle, FileCheck, TrendingUp } from 'lucide-react';
 
+type Page = 'landing' | 'demo' | 'casestudy';
+
 function App() {
-  const [showDemo, setShowDemo] = useState(false);
+  const [page, setPage] = useState<Page>('landing');
   const [activeTab, setActiveTab] = useState('alerts');
   const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
 
@@ -26,13 +29,27 @@ function App() {
   }
 
   useEffect(() => {
-    if (showDemo) {
+    if (page === 'demo') {
       fetchTransactions();
     }
-  }, [showDemo]);
+  }, [page]);
 
-  if (!showDemo) {
-    return <LandingPage onEnterDemo={() => setShowDemo(true)} />;
+  if (page === 'landing') {
+    return (
+      <LandingPage
+        onEnterDemo={() => setPage('demo')}
+        onCaseStudy={() => setPage('casestudy')}
+      />
+    );
+  }
+
+  if (page === 'casestudy') {
+    return (
+      <CaseStudy
+        onBack={() => setPage('landing')}
+        onEnterDemo={() => setPage('demo')}
+      />
+    );
   }
 
   const highRiskCount = transactions.filter(t => t.risk_score >= 80).length;
@@ -50,20 +67,18 @@ function App() {
           {/* Top bar with back links */}
           <div className="border-b border-slate-800/50 bg-slate-900/50 px-8 py-2.5 flex items-center justify-between">
             <button
-              onClick={() => setShowDemo(false)}
+              onClick={() => setPage('landing')}
               className="text-xs text-slate-500 hover:text-white transition-colors"
             >
               ← Back to overview
             </button>
             <div className="flex items-center gap-4 text-xs">
-              <a
-                href="https://aurimas.io/projects/cleartrace"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => setPage('casestudy')}
                 className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
               >
                 Case Study <ExternalLink className="w-3 h-3" />
-              </a>
+              </button>
               <a
                 href="https://aurimas.io"
                 target="_blank"
@@ -186,14 +201,12 @@ function App() {
             Built by <span className="text-slate-400">Aurimas Nausėdas</span>
           </p>
           <div className="flex items-center gap-4 text-xs">
-            <a
-              href="https://aurimas.io/projects/cleartrace"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setPage('casestudy')}
               className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
             >
               Case study <ExternalLink className="w-3 h-3" />
-            </a>
+            </button>
             <a
               href="https://github.com/aurimas13/ClearTrace"
               target="_blank"

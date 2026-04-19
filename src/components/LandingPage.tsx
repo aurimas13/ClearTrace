@@ -16,6 +16,7 @@ import {
 
 interface LandingPageProps {
   onEnterDemo: () => void;
+  onCaseStudy: () => void;
 }
 
 function HowItWorksModal({ onClose }: { onClose: () => void }) {
@@ -101,7 +102,7 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function LandingPage({ onEnterDemo }: LandingPageProps) {
+export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPageProps) {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const metrics = [
@@ -291,13 +292,13 @@ export default function LandingPage({ onEnterDemo }: LandingPageProps) {
             Built by <span className="text-slate-300 font-medium">Aurimas Nausėdas</span>
           </p>
           <div className="flex items-center gap-6 text-sm">
-            <a
-              href="https://aurimas.io/projects/cleartrace"
+            <button
+              onClick={onCaseStudy}
               className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1.5"
             >
               Read the case study
               <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            </button>
             <a
               href="https://github.com/aurimas13/ClearTrace"
               className="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5"
