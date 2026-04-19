@@ -1,4 +1,4 @@
-import { AlertTriangle, FileSearch, Database } from 'lucide-react';
+import { AlertTriangle, FileSearch, Database, ExternalLink } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -20,8 +20,8 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <FileSearch className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-white font-bold text-lg">AML Platform</h1>
-            <p className="text-slate-400 text-xs">Investigation Suite</p>
+            <h1 className="text-white font-bold text-lg">ClearTrace</h1>
+            <p className="text-slate-400 text-xs">Intelligence Suite</p>
           </div>
         </div>
       </div>
@@ -48,7 +48,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </div>
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
+      <div className="p-4 border-t border-slate-800 space-y-3">
         <div className="bg-slate-800 rounded-lg p-4">
           <p className="text-xs text-slate-400 mb-2">System Status</p>
           <div className="flex items-center gap-2">
@@ -56,6 +56,15 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             <span className="text-sm text-white font-medium">All Systems Operational</span>
           </div>
         </div>
+        <a
+          href="https://aurimas.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-white transition-colors py-1"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Back to aurimas.io
+        </a>
       </div>
     </div>
   );
