@@ -116,15 +116,20 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Background layers */}
+      <div className="absolute inset-0 grid-pattern pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-indigo-500/20 via-violet-500/10 to-transparent blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header */}
-      <header className="border-b border-slate-800/50">
+      <header className="relative border-b border-white/5 backdrop-blur-sm bg-[#0a0a12]/50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-violet-500 to-emerald-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/40">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-bold text-lg">ClearTrace Intelligence</span>
+            <span className="text-white font-bold text-lg tracking-tight">ClearTrace Intelligence</span>
           </div>
           <a
             href="https://aurimas.io"
@@ -137,41 +142,46 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
       </header>
 
       {/* Hero */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6">
+      <main className="relative flex-1 flex flex-col items-center justify-center px-6 pt-20">
         <div className="max-w-4xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-emerald-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-8 backdrop-blur-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
             <Shield className="w-3.5 h-3.5" />
             AI-Powered AML Investigation Platform
           </div>
 
           {/* Headline */}
-          <h1 className="text-5xl md:text-6xl font-extrabold text-white leading-tight mb-6">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight">
             Stop Chasing False Positives.
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+            <span className="text-gradient-brand">
               Start Investigating Smarter.
             </span>
           </h1>
 
           {/* Problem statement */}
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Fraud analysts spend <span className="text-white font-semibold">60%+ of their time</span> on manual transaction review and SAR preparation.
-            ClearTrace uses LLM-orchestrated investigation to surface real threats, visualize money networks, and draft reports — with humans always in the loop.
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-10 leading-relaxed">
+            Fraud analysts spend <span className="text-white font-semibold">over 60% of their time</span> on manual transaction review and SAR preparation.
+            ClearTrace streamlines threat investigation by using LLM-orchestrated tools to highlight real risks, map financial flows, and draft reports—empowering analysts to focus on decision-making while maintaining human oversight.
           </p>
 
           {/* CTA buttons */}
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <button
               onClick={onEnterDemo}
-              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-semibold text-lg flex items-center gap-3 transition-all shadow-xl shadow-blue-600/25 hover:shadow-blue-500/40"
+              className="group relative px-8 py-4 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 hover:from-indigo-500 hover:via-violet-500 hover:to-indigo-500 text-white rounded-xl font-semibold text-lg flex items-center gap-3 transition-all shadow-2xl shadow-indigo-600/40 hover:shadow-violet-500/50 hover:-translate-y-0.5"
             >
-              Enter Live Demo
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <span className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-400 to-violet-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
+              <span className="relative">Enter Live Demo</span>
+              <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-lg flex items-center gap-3 transition-all border border-slate-700"
+              className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-semibold text-lg flex items-center gap-3 transition-all border border-white/10 backdrop-blur-sm"
             >
               How It Works
               <ChevronRight className="w-5 h-5" />
@@ -186,12 +196,13 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
             {metrics.map((m, i) => {
               const Icon = m.icon;
               return (
-                <div key={i} className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 text-center">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
-                    <Icon className="w-5 h-5 text-blue-400" />
+                <div key={i} className="relative group bg-gradient-to-b from-white/5 to-transparent border border-white/10 rounded-2xl p-6 text-center backdrop-blur-sm hover:border-indigo-500/40 transition-colors">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center mx-auto mb-3">
+                    <Icon className="w-5 h-5 text-indigo-300" />
                   </div>
-                  <div className="text-3xl font-extrabold text-white mb-1">{m.value}</div>
-                  <div className="text-sm text-slate-400">{m.label}</div>
+                  <div className="relative text-4xl font-extrabold text-gradient-brand mb-1">{m.value}</div>
+                  <div className="relative text-sm text-slate-400">{m.label}</div>
                 </div>
               );
             })}
@@ -270,12 +281,12 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
 
           {/* Tech stack */}
           <div className="mb-16">
-            <p className="text-xs text-slate-500 uppercase tracking-widest mb-4">Built with</p>
-            <div className="flex flex-wrap items-center justify-center gap-3">
+            <p className="text-xs text-slate-500 uppercase tracking-[0.2em] mb-4 font-semibold">Built with</p>
+            <div className="flex flex-wrap items-center justify-center gap-2">
               {techStack.map((tech) => (
                 <span
                   key={tech}
-                  className="px-3 py-1.5 bg-slate-800/60 border border-slate-700/50 rounded-lg text-sm text-slate-300 font-medium"
+                  className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-slate-300 font-medium backdrop-blur-sm hover:bg-white/10 hover:border-indigo-500/30 transition-colors"
                 >
                   {tech}
                 </span>
@@ -286,7 +297,7 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/50 py-6">
+      <footer className="relative border-t border-white/5 py-6 backdrop-blur-sm bg-[#0a0a12]/80">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500">
             Built by <span className="text-slate-300 font-medium">Aurimas Nausėdas</span>

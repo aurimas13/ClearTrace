@@ -112,7 +112,7 @@ function App() {
                     <Download className="w-4 h-4" />
                     <span>Export</span>
                   </button>
-                  <button onClick={fetchTransactions} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20">
+                  <button onClick={fetchTransactions} className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/30 hover:shadow-violet-500/40 font-medium">
                     <RefreshCw className="w-4 h-4" />
                     <span>Refresh</span>
                   </button>

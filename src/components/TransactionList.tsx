@@ -169,12 +169,14 @@ export default function TransactionList({ transactions: propTransactions }: Tran
                 <button
                   onClick={() => handleAnalyze(tx)}
                   disabled={analyzingId === tx.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-purple-500/15 text-purple-400 hover:bg-purple-500/25 border border-purple-500/20"
+                  title="Run AI investigation to assess fraud risk"
+                  className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-600/30 hover:shadow-violet-500/50 hover:-translate-y-0.5"
                 >
+                  <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
                   {analyzingId === tx.id ? (
-                    <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing…</>
+                    <><Loader2 className="relative w-3.5 h-3.5 animate-spin" /> <span className="relative">Analyzing…</span></>
                   ) : (
-                    <><Brain className="w-3 h-3" /> AI Analyze</>
+                    <><Brain className="relative w-3.5 h-3.5" /> <span className="relative">AI Investigate</span></>
                   )}
                 </button>
               </td>

@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>ClearTrace — LinkedIn Share Image</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #0a0a12;
+    color: #fff;
+  }
+  .card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    background: #0a0a12;
+    overflow: hidden;
+  }
+  /* Ambient gradient glows */
+  .glow-1 {
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.5), transparent 70%);
+    filter: blur(40px);
+  }
+  .glow-2 {
+    position: absolute;
+    bottom: -200px; right: -150px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.35), transparent 70%);
+    filter: blur(40px);
+  }
+  .glow-3 {
+    position: absolute;
+    top: 20%; right: 10%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
+    filter: blur(40px);
+  }
+  /* Grid pattern */
+  .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.6;
+  }
+
+  .content {
+    position: relative;
+    padding: 32px 56px;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #10b981 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.6);
+  }
+  .brand-text {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .brand-sub {
+    font-size: 14px;
+    color: #94a3b8;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15), rgba(16, 185, 129, 0.15));
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    font-size: 12px;
+    font-weight: 700;
+    color: #c7d2fe;
+    letter-spacing: 0.05em;
+    width: fit-content;
+    margin-bottom: 16px;
+  }
+  .badge-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 12px #34d399;
+  }
+
+  .headline {
+    font-size: 46px;
+    font-weight: 900;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    margin-bottom: 12px;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 50%, #6ee7b7 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subhead {
+    font-size: 16px;
+    line-height: 1.45;
+    color: #cbd5e1;
+    max-width: 900px;
+    font-weight: 400;
+  }
+  .subhead b { color: white; font-weight: 600; }
+
+  .metrics {
+    display: flex;
+    gap: 22px;
+    margin-top: 8px;
+  }
+  .metric {
+    flex: 1;
+    padding: 12px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+  }
+  .metric-value {
+    font-size: 30px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #a5b4fc, #c4b5fd, #6ee7b7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .metric-label {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+
+  .footer {
+    position: absolute;
+    left: 56px;
+    right: 56px;
+    bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .footer-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #10b981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.5);
+  }
+  .footer-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+  }
+  .footer-role {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 1px;
+  }
+  .footer-right {
+    text-align: right;
+    font-size: 14px;
+    color: #c7d2fe;
+    font-family: 'SF Mono', ui-monospace, monospace;
+  }
+  .tech-stack {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+    justify-content: flex-end;
+  }
+  .tech {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-family: inherit;
+    letter-spacing: 0.02em;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+    <div class="glow-3"></div>
+    <div class="grid"></div>
+
+    <div class="content">
+      <!-- Top: header + hero -->
+      <div>
+        <div class="header">
+          <div class="logo">
+            <!-- shield svg -->
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-text">ClearTrace Intelligence</div>
+            <div class="brand-sub">AI-Powered AML Investigation</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="badge">
+            <span class="badge-dot"></span>
+            FRACTIONAL AI PRODUCT MANAGEMENT · CASE STUDY
+          </div>
+
+          <h1 class="headline">
+            Stop Chasing False Positives.<br />
+            <span class="gradient-text">Start Investigating Smarter.</span>
+          </h1>
+
+          <p class="subhead">
+            An <b>LLM-orchestrated investigation platform</b> that cuts fraud-analyst review time by 50%, maps money-flow networks, and drafts SARs — with humans always in the loop.
+          </p>
+        </div>
+      </div>
+
+      <!-- Metrics row -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-value">50%</div>
+          <div class="metric-label">Reduction in manual review time</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">3→1</div>
+          <div class="metric-label">Hours to generate SAR drafts</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">67%</div>
+          <div class="metric-label">Faster investigation cycle</div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-left">
+          <div class="avatar">AN</div>
+          <div>
+            <div class="footer-name">Aurimas Nausėdas — Fractional AI Product Manager</div>
+            <div class="footer-role">cleartrace.aurimas.io · React · TypeScript · Supabase · React Flow · Claude AI</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

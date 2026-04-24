@@ -10,23 +10,24 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, change, icon: Icon, trend }: StatCardProps) {
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-6 hover:bg-slate-800 transition-all">
-      <div className="flex items-start justify-between mb-4">
-        <div className="p-3 bg-blue-600/10 border border-blue-600/20 rounded-lg">
-          <Icon className="w-6 h-6 text-blue-400" />
+    <div className="relative group bg-gradient-to-b from-white/5 to-transparent border border-white/10 rounded-2xl p-6 hover:border-indigo-500/30 transition-all backdrop-blur-sm overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-transparent to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="relative flex items-start justify-between mb-4">
+        <div className="p-3 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 rounded-xl">
+          <Icon className="w-6 h-6 text-indigo-300" />
         </div>
         {change && (
           <span
-            className={`text-sm font-medium ${
-              trend === 'up' ? 'text-red-400' : 'text-green-400'
+            className={`text-xs font-semibold px-2 py-1 rounded-full ${
+              trend === 'up' ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
             }`}
           >
             {change}
           </span>
         )}
       </div>
-      <h3 className="text-slate-400 text-sm mb-1">{title}</h3>
-      <p className="text-white text-3xl font-bold">{value}</p>
+      <h3 className="relative text-slate-400 text-sm mb-1 font-medium">{title}</h3>
+      <p className="relative text-white text-3xl font-extrabold tracking-tight">{value}</p>
     </div>
   );
 }
