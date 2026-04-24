@@ -9,49 +9,48 @@
     width: 1200px;
     height: 630px;
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    background: #0a0a12;
-    color: #fff;
+    background: #fafbff;
+    color: #0f172a;
   }
   .card {
     position: relative;
     width: 1200px;
     height: 630px;
-    background: #0a0a12;
+    background: #fafbff;
     overflow: hidden;
   }
-  /* Ambient gradient glows */
+  /* Subtle ambient light gradients */
   .glow-1 {
     position: absolute;
-    top: -200px; left: -200px;
+    top: -250px; left: -150px;
     width: 700px; height: 700px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.5), transparent 70%);
-    filter: blur(40px);
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.22), transparent 65%);
+    filter: blur(30px);
   }
   .glow-2 {
     position: absolute;
-    bottom: -200px; right: -150px;
+    bottom: -200px; right: -100px;
     width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.35), transparent 70%);
-    filter: blur(40px);
+    background: radial-gradient(circle, rgba(13, 148, 136, 0.18), transparent 65%);
+    filter: blur(30px);
   }
   .glow-3 {
     position: absolute;
-    top: 20%; right: 10%;
+    top: 10%; right: 5%;
     width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
-    filter: blur(40px);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.15), transparent 70%);
+    filter: blur(30px);
   }
   /* Grid pattern */
   .grid {
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+      linear-gradient(rgba(30, 58, 138, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(30, 58, 138, 0.04) 1px, transparent 1px);
     background-size: 50px 50px;
-    opacity: 0.6;
   }
 
   .content {
@@ -69,23 +68,25 @@
   .logo {
     width: 56px; height: 56px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #10b981 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #4338ca 50%, #0d9488 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 40px -10px rgba(99, 102, 241, 0.6);
+    box-shadow: 0 10px 40px -10px rgba(30, 64, 175, 0.45);
   }
   .brand-text {
     font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.02em;
+    color: #0f172a;
   }
   .brand-sub {
-    font-size: 14px;
-    color: #94a3b8;
-    letter-spacing: 0.05em;
+    font-size: 13px;
+    color: #64748b;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     margin-top: 2px;
+    font-weight: 600;
   }
 
   .badge {
@@ -94,20 +95,21 @@
     gap: 10px;
     padding: 8px 16px;
     border-radius: 100px;
-    background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15), rgba(16, 185, 129, 0.15));
-    border: 1px solid rgba(99, 102, 241, 0.3);
+    background: white;
+    border: 1px solid #bfdbfe;
     font-size: 12px;
     font-weight: 700;
-    color: #c7d2fe;
+    color: #1e40af;
     letter-spacing: 0.05em;
+    box-shadow: 0 1px 2px rgba(30, 41, 59, 0.05);
     width: fit-content;
     margin-bottom: 16px;
   }
   .badge-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
-    background: #34d399;
-    box-shadow: 0 0 12px #34d399;
+    background: #10b981;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
   }
 
   .headline {
@@ -116,9 +118,10 @@
     line-height: 1.04;
     letter-spacing: -0.035em;
     margin-bottom: 12px;
+    color: #0f172a;
   }
   .gradient-text {
-    background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 50%, #6ee7b7 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #4338ca 50%, #0d9488 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -126,12 +129,12 @@
 
   .subhead {
     font-size: 16px;
-    line-height: 1.45;
-    color: #cbd5e1;
+    line-height: 1.5;
+    color: #475569;
     max-width: 900px;
     font-weight: 400;
   }
-  .subhead b { color: white; font-weight: 600; }
+  .subhead b { color: #0f172a; font-weight: 600; }
 
   .metrics {
     display: flex;
@@ -140,16 +143,19 @@
   }
   .metric {
     flex: 1;
-    padding: 12px 18px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px 20px;
     border-radius: 14px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+    background: white;
+    box-shadow:
+      0 1px 3px 0 rgba(30, 41, 59, 0.06),
+      0 1px 2px -1px rgba(30, 41, 59, 0.04),
+      0 0 0 1px rgba(226, 232, 240, 0.8);
   }
   .metric-value {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 900;
     letter-spacing: -0.02em;
-    background: linear-gradient(135deg, #a5b4fc, #c4b5fd, #6ee7b7);
+    background: linear-gradient(135deg, #1e40af 0%, #4338ca 50%, #0d9488 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -157,8 +163,9 @@
   }
   .metric-label {
     font-size: 13px;
-    color: #94a3b8;
+    color: #64748b;
     line-height: 1.4;
+    font-weight: 500;
   }
 
   .footer {
@@ -170,7 +177,7 @@
     justify-content: space-between;
     align-items: center;
     padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid #e2e8f0;
   }
   .footer-left {
     display: flex;
@@ -178,49 +185,26 @@
     gap: 14px;
   }
   .avatar {
-    width: 38px; height: 38px;
+    width: 40px; height: 40px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #10b981);
+    background: linear-gradient(135deg, #1e40af, #0d9488);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 15px;
     color: white;
-    box-shadow: 0 4px 20px -4px rgba(99, 102, 241, 0.5);
+    box-shadow: 0 4px 14px -2px rgba(30, 64, 175, 0.35);
   }
   .footer-name {
     font-size: 15px;
     font-weight: 600;
-    color: white;
+    color: #0f172a;
   }
   .footer-role {
     font-size: 13px;
-    color: #94a3b8;
+    color: #64748b;
     margin-top: 1px;
-  }
-  .footer-right {
-    text-align: right;
-    font-size: 14px;
-    color: #c7d2fe;
-    font-family: 'SF Mono', ui-monospace, monospace;
-  }
-  .tech-stack {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-    justify-content: flex-end;
-  }
-  .tech {
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #cbd5e1;
-    font-family: inherit;
-    letter-spacing: 0.02em;
   }
 </style>
 </head>
@@ -236,7 +220,6 @@
       <div>
         <div class="header">
           <div class="logo">
-            <!-- shield svg -->
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>

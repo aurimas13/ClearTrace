@@ -59,23 +59,23 @@ function App() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-[#fafbff] flex flex-col">
       <div className="flex flex-1 overflow-hidden">
         <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
         <main className="flex-1 overflow-auto">
           {/* Top bar with back links */}
-          <div className="border-b border-slate-800/50 bg-slate-900/50 px-8 py-2.5 flex items-center justify-between">
+          <div className="border-b border-slate-200 bg-white px-8 py-2.5 flex items-center justify-between">
             <button
               onClick={() => setPage('landing')}
-              className="text-xs text-slate-500 hover:text-white transition-colors"
+              className="text-xs text-slate-500 hover:text-slate-900 transition-colors font-medium"
             >
               ← Back to overview
             </button>
             <div className="flex items-center gap-4 text-xs">
               <button
                 onClick={() => setPage('casestudy')}
-                className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                className="text-blue-700 hover:text-blue-900 font-semibold transition-colors flex items-center gap-1"
               >
                 Case Study <ExternalLink className="w-3 h-3" />
               </button>
@@ -83,7 +83,7 @@ function App() {
                 href="https://aurimas.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+                className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
               >
                 aurimas.io <ExternalLink className="w-3 h-3" />
               </a>
@@ -94,25 +94,25 @@ function App() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-3xl font-bold text-white mb-2">
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">
                     {activeTab === 'alerts' && 'Alert Dashboard'}
                     {activeTab === 'investigations' && 'Active Investigations'}
                     {activeTab === 'pipelines' && 'Data Pipelines'}
                   </h2>
-                  <p className="text-slate-400">
+                  <p className="text-slate-600">
                     Real-time monitoring of suspicious financial activities
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 flex items-center gap-2 transition-all">
+                  <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
                     <Filter className="w-4 h-4" />
                     <span>Filter</span>
                   </button>
-                  <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg border border-slate-700 flex items-center gap-2 transition-all">
+                  <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
                     <Download className="w-4 h-4" />
                     <span>Export</span>
                   </button>
-                  <button onClick={fetchTransactions} className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-lg flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/30 hover:shadow-violet-500/40 font-medium">
+                  <button onClick={fetchTransactions} className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg flex items-center gap-2 transition-all primary-shadow font-semibold">
                     <RefreshCw className="w-4 h-4" />
                     <span>Refresh</span>
                   </button>
@@ -147,14 +147,14 @@ function App() {
             {activeTab === 'alerts' && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-xl font-semibold text-white mb-4">Network Analysis</h3>
+                  <h3 className="text-xl font-semibold text-slate-900 mb-4">Network Analysis</h3>
                   <NetworkGraph transactions={transactions} />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold text-white">Flagged Transactions</h3>
-                    <span className="text-sm text-slate-400">
+                    <h3 className="text-xl font-semibold text-slate-900">Flagged Transactions</h3>
+                    <span className="text-sm text-slate-600">
                       Showing {transactions.length} transactions
                     </span>
                   </div>
@@ -164,13 +164,13 @@ function App() {
             )}
 
             {activeTab === 'investigations' && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
+              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
                 <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-blue-600/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileCheck className="w-8 h-8 text-blue-400" />
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileCheck className="w-8 h-8 text-blue-700" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Active Investigations</h3>
-                  <p className="text-slate-400">
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Active Investigations</h3>
+                  <p className="text-slate-600">
                     Investigation case management and detailed transaction analysis will appear here
                   </p>
                 </div>
@@ -178,13 +178,13 @@ function App() {
             )}
 
             {activeTab === 'pipelines' && (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
+              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
                 <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-blue-600/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <RefreshCw className="w-8 h-8 text-blue-400" />
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <RefreshCw className="w-8 h-8 text-blue-700" />
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Data Pipeline Status</h3>
-                  <p className="text-slate-400">
+                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Data Pipeline Status</h3>
+                  <p className="text-slate-600">
                     Real-time data ingestion monitoring and pipeline health metrics will appear here
                   </p>
                 </div>
@@ -195,15 +195,15 @@ function App() {
       </div>
 
       {/* Dashboard footer */}
-      <footer className="border-t border-slate-800/50 bg-slate-900/30 py-3 px-8">
+      <footer className="border-t border-slate-200 bg-white py-3 px-8">
         <div className="flex items-center justify-between">
           <p className="text-xs text-slate-500">
-            Built by <span className="text-slate-400">Aurimas Nausėdas</span>
+            Built by <span className="text-slate-900 font-semibold">Aurimas Nausėdas</span>
           </p>
           <div className="flex items-center gap-4 text-xs">
             <button
               onClick={() => setPage('casestudy')}
-              className="text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+              className="text-blue-700 hover:text-blue-900 font-semibold transition-colors flex items-center gap-1"
             >
               Case study <ExternalLink className="w-3 h-3" />
             </button>
@@ -211,7 +211,7 @@ function App() {
               href="https://github.com/aurimas13/ClearTrace"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-white transition-colors"
+              className="text-slate-600 hover:text-slate-900 transition-colors"
             >
               GitHub
             </a>
@@ -219,7 +219,7 @@ function App() {
               href="https://aurimas.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-white transition-colors"
+              className="text-slate-600 hover:text-slate-900 transition-colors"
             >
               aurimas.io
             </a>

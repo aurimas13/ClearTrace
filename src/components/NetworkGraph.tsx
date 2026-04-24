@@ -30,20 +30,20 @@ interface AccountNodeData {
 function AccountNode({ data }: { data: AccountNodeData }) {
   return (
     <div
-      className={`px-3 py-2 rounded-lg shadow-lg text-center min-w-[120px] border-2 ${
+      className={`px-3 py-2 rounded-lg shadow-md text-center min-w-[120px] border-2 ${
         data.isHighRisk
-          ? 'bg-red-950/80 border-red-500 shadow-red-500/20'
-          : 'bg-slate-800 border-slate-600 shadow-slate-900/40'
+          ? 'bg-red-50 border-red-500'
+          : 'bg-white border-blue-300'
       }`}
     >
-      <Handle type="target" position={Position.Left} className="!bg-slate-500 !w-2 !h-2" />
-      <div className={`text-xs font-mono font-semibold truncate ${data.isHighRisk ? 'text-red-300' : 'text-blue-300'}`}>
+      <Handle type="target" position={Position.Left} className="!bg-slate-400 !w-2 !h-2" />
+      <div className={`text-xs font-mono font-semibold truncate ${data.isHighRisk ? 'text-red-700' : 'text-blue-700'}`}>
         {data.label}
       </div>
-      <div className="text-[10px] text-slate-400 mt-0.5">
+      <div className="text-[10px] text-slate-500 mt-0.5">
         {data.connectionCount} txn{data.connectionCount !== 1 ? 's' : ''}
       </div>
-      <Handle type="source" position={Position.Right} className="!bg-slate-500 !w-2 !h-2" />
+      <Handle type="source" position={Position.Right} className="!bg-slate-400 !w-2 !h-2" />
     </div>
   );
 }
@@ -92,14 +92,14 @@ function buildGraph(transactions: SupabaseTransaction[]) {
     target: tx.receiver_account,
     animated: tx.risk_score > 80,
     style: {
-      stroke: tx.risk_score > 80 ? '#ef4444' : tx.risk_score > 60 ? '#f97316' : '#475569',
+      stroke: tx.risk_score > 80 ? '#dc2626' : tx.risk_score > 60 ? '#d97706' : '#94a3b8',
       strokeWidth: Math.max(1.5, Math.min(4, tx.amount / 50000)),
     },
     label: `${tx.amount.toLocaleString()} ${tx.currency}`,
-    labelStyle: { fill: '#94a3b8', fontSize: 10 },
-    labelBgStyle: { fill: '#0f172a', fillOpacity: 0.85 },
+    labelStyle: { fill: '#475569', fontSize: 10, fontWeight: 500 },
+    labelBgStyle: { fill: '#ffffff', fillOpacity: 0.95 },
     labelBgPadding: [4, 2] as [number, number],
-    markerEnd: { type: 'arrowclosed' as const, color: tx.risk_score > 80 ? '#ef4444' : '#475569' },
+    markerEnd: { type: 'arrowclosed' as const, color: tx.risk_score > 80 ? '#dc2626' : '#94a3b8' },
   }));
 
   return { nodes, edges };
@@ -144,34 +144,34 @@ export default function NetworkGraph({ transactions }: NetworkGraphProps) {
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
-        <p className="text-slate-400">No transaction data to visualize.</p>
+      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
+        <p className="text-slate-600">No transaction data to visualize.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+    <div className="bg-white rounded-2xl overflow-hidden card-shadow">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
         <div>
-          <h3 className="text-lg font-bold text-white">Transaction Network</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h3 className="text-lg font-bold text-slate-900">Transaction Network</h3>
+          <p className="text-xs text-slate-600 mt-0.5">
             {uniqueAccounts} accounts &middot; {transactions.length} transactions &middot;{' '}
-            <span className="text-red-400">{highRiskNodes} high-risk nodes</span>
+            <span className="text-red-600 font-semibold">{highRiskNodes} high-risk nodes</span>
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-950"></div>
-            <span className="text-slate-400">Risk &gt; 80</span>
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-50"></div>
+            <span className="text-slate-600">Risk &gt; 80</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-slate-600 bg-slate-800"></div>
-            <span className="text-slate-400">Normal</span>
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-blue-300 bg-white"></div>
+            <span className="text-slate-600">Normal</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-6 h-0.5 bg-red-500"></div>
-            <span className="text-slate-400">High risk edge</span>
+            <span className="text-slate-600">High risk edge</span>
           </div>
         </div>
       </div>
@@ -186,14 +186,14 @@ export default function NetworkGraph({ transactions }: NetworkGraphProps) {
           fitView
           fitViewOptions={{ padding: 0.3 }}
           proOptions={{ hideAttribution: true }}
-          style={{ background: '#0f172a' }}
+          style={{ background: '#f8fafc' }}
           minZoom={0.3}
           maxZoom={2}
         >
-          <Background color="#1e293b" gap={20} />
+          <Background color="#cbd5e1" gap={20} />
           <Controls
             showInteractive={false}
-            className="!bg-slate-800 !border-slate-700 !shadow-xl [&>button]:!bg-slate-800 [&>button]:!border-slate-700 [&>button]:!text-slate-300 [&>button:hover]:!bg-slate-700"
+            className="!bg-white !border-slate-200 !shadow-md [&>button]:!bg-white [&>button]:!border-slate-200 [&>button]:!text-slate-600 [&>button:hover]:!bg-slate-50"
           />
         </ReactFlow>
       </div>

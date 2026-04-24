@@ -71,9 +71,9 @@ export default function TransactionList({ transactions: propTransactions }: Tran
   }
 
   const getRiskColor = (score: number) => {
-    if (score >= 80) return 'text-red-400';
-    if (score >= 60) return 'text-orange-400';
-    return 'text-green-400';
+    if (score >= 80) return 'text-red-600';
+    if (score >= 60) return 'text-amber-600';
+    return 'text-emerald-600';
   };
 
   const formatDate = (dateStr: string) => {
@@ -90,34 +90,34 @@ export default function TransactionList({ transactions: propTransactions }: Tran
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 text-blue-400 animate-spin" />
-        <span className="ml-3 text-slate-400">Loading transactions…</span>
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        <span className="ml-3 text-slate-600">Loading transactions…</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
-        <p className="text-red-400 font-medium">Failed to load transactions</p>
-        <p className="text-sm text-red-400/70 mt-1">{error}</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+        <p className="text-red-700 font-semibold">Failed to load transactions</p>
+        <p className="text-sm text-red-600 mt-1">{error}</p>
       </div>
     );
   }
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">
-        <p className="text-slate-400">No transactions found.</p>
+      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
+        <p className="text-slate-600">No transactions found.</p>
       </div>
     );
   }
 
   return (
   <>
-    <div className="overflow-x-auto rounded-lg border border-slate-700">
+    <div className="overflow-x-auto rounded-2xl bg-white card-shadow">
       <table className="w-full text-sm text-left">
-        <thead className="bg-slate-800/80 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-700">
+        <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200 font-semibold">
           <tr>
             <th className="px-4 py-3">ID</th>
             <th className="px-4 py-3">Type</th>
@@ -128,28 +128,28 @@ export default function TransactionList({ transactions: propTransactions }: Tran
             <th className="px-4 py-3">Date</th>
             <th className="px-4 py-3 text-center">Risk</th>
             <th className="px-4 py-3 text-center">Flagged</th>
-            <th className="px-4 py-3 text-center">Analyze</th>
+            <th className="px-4 py-3 text-center">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-700/50">
+        <tbody className="divide-y divide-slate-100">
           {transactions.map((tx) => (
             <tr
               key={tx.id}
-              className={`transition-colors hover:bg-slate-800/60 ${
+              className={`transition-colors hover:bg-slate-50 ${
                 tx.is_flagged
-                  ? 'bg-red-500/5 border-l-2 border-l-red-500'
-                  : 'bg-slate-900/30'
+                  ? 'bg-red-50/40 border-l-2 border-l-red-500'
+                  : 'bg-white'
               }`}
             >
-              <td className="px-4 py-3 font-mono text-blue-400 font-medium">{tx.id}</td>
-              <td className="px-4 py-3 text-slate-300 capitalize">{tx.transaction_type}</td>
-              <td className="px-4 py-3 font-mono text-slate-300 text-xs">{tx.sender_account}</td>
-              <td className="px-4 py-3 font-mono text-slate-300 text-xs">{tx.receiver_account}</td>
-              <td className="px-4 py-3 text-right font-semibold text-white">
+              <td className="px-4 py-3 font-mono text-blue-700 font-semibold">{tx.id}</td>
+              <td className="px-4 py-3 text-slate-700 capitalize">{tx.transaction_type}</td>
+              <td className="px-4 py-3 font-mono text-slate-600 text-xs">{tx.sender_account}</td>
+              <td className="px-4 py-3 font-mono text-slate-600 text-xs">{tx.receiver_account}</td>
+              <td className="px-4 py-3 text-right font-semibold text-slate-900">
                 {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </td>
-              <td className="px-4 py-3 text-slate-400">{tx.currency}</td>
-              <td className="px-4 py-3 text-slate-400 whitespace-nowrap">{formatDate(tx.transaction_date)}</td>
+              <td className="px-4 py-3 text-slate-600 font-medium">{tx.currency}</td>
+              <td className="px-4 py-3 text-slate-500 whitespace-nowrap">{formatDate(tx.transaction_date)}</td>
               <td className="px-4 py-3 text-center">
                 <span className={`font-bold ${getRiskColor(tx.risk_score)}`}>
                   {tx.risk_score}
@@ -157,12 +157,12 @@ export default function TransactionList({ transactions: propTransactions }: Tran
               </td>
               <td className="px-4 py-3 text-center">
                 {tx.is_flagged ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
                     <AlertTriangle className="w-3 h-3" />
                     Yes
                   </span>
                 ) : (
-                  <span className="text-slate-500 text-xs">No</span>
+                  <span className="text-slate-400 text-xs">No</span>
                 )}
               </td>
               <td className="px-4 py-3 text-center">
@@ -170,13 +170,12 @@ export default function TransactionList({ transactions: propTransactions }: Tran
                   onClick={() => handleAnalyze(tx)}
                   disabled={analyzingId === tx.id}
                   title="Run AI investigation to assess fraud risk"
-                  className="group relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-lg shadow-violet-600/30 hover:shadow-violet-500/50 hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white primary-shadow hover:-translate-y-0.5"
                 >
-                  <span className="absolute inset-0 rounded-lg bg-gradient-to-r from-violet-400 to-indigo-400 opacity-0 group-hover:opacity-30 blur-md transition-opacity" />
                   {analyzingId === tx.id ? (
-                    <><Loader2 className="relative w-3.5 h-3.5 animate-spin" /> <span className="relative">Analyzing…</span></>
+                    <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing…</>
                   ) : (
-                    <><Brain className="relative w-3.5 h-3.5" /> <span className="relative">AI Investigate</span></>
+                    <><Brain className="w-3.5 h-3.5" /> Investigate</>
                   )}
                 </button>
               </td>
