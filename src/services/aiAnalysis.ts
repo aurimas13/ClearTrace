@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient';
 import type { SupabaseTransaction } from '../components/TransactionList';
+import { addAuditEvent, getCurrentAnalyst } from './sessionStore';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HOW TO GET YOUR CLAUDE API KEY:
@@ -104,15 +105,47 @@ Transaction details:
 
   const aiSummary = await callClaudeAPI(prompt, tx);
 
+  // Detect whether a prior investigation already exists for this txn
+  const { data: existing } = await supabase
+    .from('investigations')
+    .select('id')
+    .eq('transaction_id', tx.id)
+    .limit(1);
+  const isReinvestigation = (existing?.length ?? 0) > 0;
+
   // Save investigation record to Supabase
-  const { error } = await supabase.from('investigations').insert({
-    transaction_id: tx.id,
-    ai_summary: aiSummary,
-    investigation_status: 'open',
-  });
+  const { data: inserted, error } = await supabase
+    .from('investigations')
+    .insert({
+      transaction_id: tx.id,
+      ai_summary: aiSummary,
+      investigation_status: 'open',
+    })
+    .select()
+    .single();
 
   if (error) {
     console.error('Failed to save investigation:', error.message);
+  }
+
+  // Append to audit log (sessionStorage). Falls back to txn-id if insert
+  // didn't return a record (e.g., RLS rejection — still log the action).
+  const investigationId = inserted?.id ?? `tx-${tx.id}`;
+  const analyst = getCurrentAnalyst();
+  if (isReinvestigation) {
+    addAuditEvent(
+      investigationId,
+      'reinvestigated',
+      `Re-investigated transaction #${tx.id} — new AI summary generated.`,
+      analyst
+    );
+  } else {
+    addAuditEvent(
+      investigationId,
+      'case_opened',
+      `Case opened for transaction #${tx.id} (${tx.transaction_type}, ${tx.amount.toLocaleString()} ${tx.currency}). AI risk assessment ${tx.risk_score}/100.`,
+      analyst
+    );
   }
 
   return aiSummary;

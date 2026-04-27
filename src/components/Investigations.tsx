@@ -10,10 +10,25 @@ import {
   Loader2,
   StickyNote,
   Save,
+  History,
+  UserCircle2,
+  X,
+  Shield,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import type { SupabaseTransaction, Investigation, InvestigationStatus } from '../types';
 import SarDraftModal from './SarDraftModal';
+import SanctionsPanel from './SanctionsPanel';
+import AuditTimeline from './AuditTimeline';
+import {
+  ANALYSTS,
+  type AnalystName,
+  addAuditEvent,
+  getAuditLog,
+  getAllAssignees,
+  setAssignee as persistAssignee,
+  getCurrentAnalyst,
+} from '../services/sessionStore';
 
 interface InvestigationsProps {
   transactions: SupabaseTransaction[];
@@ -82,17 +97,26 @@ function formatRelative(dateStr?: string) {
 
 export default function Investigations({ transactions, investigations, onChanged }: InvestigationsProps) {
   const [filter, setFilter] = useState<InvestigationStatus | 'all'>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<'all' | 'mine' | 'unassigned'>('all');
   const [savingId, setSavingId] = useState<number | null>(null);
   const [sarTarget, setSarTarget] = useState<Investigation | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [savedFlash, setSavedFlash] = useState<number | null>(null);
+  const [assignees, setAssignees] = useState<Record<string, AnalystName>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [openTimelines, setOpenTimelines] = useState<Set<number>>(new Set());
+  const [openSanctions, setOpenSanctions] = useState<Set<number>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const me = getCurrentAnalyst();
 
   useEffect(() => {
-    const loaded = loadNotes();
-    setNotes(loaded);
-    setNotesDraft(loaded);
-  }, []);
+    const loadedNotes = loadNotes();
+    setNotes(loadedNotes);
+    setNotesDraft(loadedNotes);
+    setAssignees(getAllAssignees());
+  }, [investigations]);
 
   // Latest investigation per transaction
   const latestPerTx = useMemo(() => {
@@ -121,9 +145,14 @@ export default function Investigations({ transactions, investigations, onChanged
   }, [transactions]);
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return latestPerTx;
-    return latestPerTx.filter((i) => i.investigation_status === filter);
-  }, [latestPerTx, filter]);
+    return latestPerTx.filter((inv) => {
+      if (filter !== 'all' && inv.investigation_status !== filter) return false;
+      const assignee = assignees[String(inv.id)] || 'Unassigned';
+      if (assigneeFilter === 'mine' && assignee !== me) return false;
+      if (assigneeFilter === 'unassigned' && assignee !== 'Unassigned') return false;
+      return true;
+    });
+  }, [latestPerTx, filter, assigneeFilter, assignees, me]);
 
   const counts = useMemo(() => {
     const c: Record<InvestigationStatus, number> = {
@@ -136,6 +165,15 @@ export default function Investigations({ transactions, investigations, onChanged
     return c;
   }, [latestPerTx]);
 
+  const myCasesCount = useMemo(
+    () => latestPerTx.filter((inv) => (assignees[String(inv.id)] || 'Unassigned') === me).length,
+    [latestPerTx, assignees, me]
+  );
+  const unassignedCount = useMemo(
+    () => latestPerTx.filter((inv) => (assignees[String(inv.id)] || 'Unassigned') === 'Unassigned').length,
+    [latestPerTx, assignees]
+  );
+
   async function updateStatus(inv: Investigation, status: InvestigationStatus) {
     setSavingId(inv.id);
     const { error } = await supabase
@@ -147,15 +185,23 @@ export default function Investigations({ transactions, investigations, onChanged
       alert('Failed to update status: ' + error.message);
       return;
     }
+    addAuditEvent(
+      inv.id,
+      'status_changed',
+      `Status changed: ${STATUS_META[inv.investigation_status].label} → ${STATUS_META[status].label}.`,
+      me
+    );
     onChanged();
   }
 
   function openSarModal(inv: Investigation) {
+    addAuditEvent(inv.id, 'sar_drafted', 'SAR draft opened for review.', me);
     setSarTarget(inv);
   }
 
   async function confirmFileSar() {
     if (!sarTarget) return;
+    addAuditEvent(sarTarget.id, 'sar_filed', 'SAR draft confirmed and filed.', me);
     await updateStatus(sarTarget, 'sar_filed');
     setSarTarget(null);
   }
@@ -168,8 +214,77 @@ export default function Investigations({ transactions, investigations, onChanged
     const next = { ...notes, [String(invId)]: notesDraft[String(invId)] || '' };
     setNotes(next);
     saveNotes(next);
+    addAuditEvent(invId, 'note_saved', 'Analyst note updated.', me);
     setSavedFlash(invId);
     setTimeout(() => setSavedFlash((curr) => (curr === invId ? null : curr)), 1500);
+  }
+
+  function changeAssignee(invId: number, analyst: AnalystName) {
+    persistAssignee(invId, analyst);
+    setAssignees((prev) => ({ ...prev, [String(invId)]: analyst }));
+    addAuditEvent(invId, 'assigned', `Case assigned to ${analyst}.`, me);
+  }
+
+  // ─── Bulk selection ──────────────────────────────────────────────────────
+  function toggleSelect(invId: number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(invId)) next.delete(invId);
+      else next.add(invId);
+      return next;
+    });
+  }
+  function toggleSelectAll() {
+    if (selectedIds.size === filtered.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filtered.map((i) => i.id)));
+  }
+  function clearSelection() {
+    setSelectedIds(new Set());
+  }
+  async function bulkUpdate(status: InvestigationStatus) {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await supabase
+      .from('investigations')
+      .update({ investigation_status: status })
+      .in('id', ids);
+    setBulkBusy(false);
+    if (error) {
+      alert('Bulk update failed: ' + error.message);
+      return;
+    }
+    for (const id of ids) {
+      addAuditEvent(id, 'status_changed', `Bulk update: status set to ${STATUS_META[status].label}.`, me);
+    }
+    clearSelection();
+    onChanged();
+  }
+  async function bulkAssign(analyst: AnalystName) {
+    if (selectedIds.size === 0) return;
+    for (const id of selectedIds) {
+      persistAssignee(id, analyst);
+      addAuditEvent(id, 'assigned', `Bulk assigned to ${analyst}.`, me);
+    }
+    setAssignees(getAllAssignees());
+    clearSelection();
+  }
+
+  function toggleTimeline(invId: number) {
+    setOpenTimelines((prev) => {
+      const next = new Set(prev);
+      if (next.has(invId)) next.delete(invId);
+      else next.add(invId);
+      return next;
+    });
+  }
+  function toggleSanctionsPanel(invId: number) {
+    setOpenSanctions((prev) => {
+      const next = new Set(prev);
+      if (next.has(invId)) next.delete(invId);
+      else next.add(invId);
+      return next;
+    });
   }
 
   if (latestPerTx.length === 0) {
@@ -205,42 +320,134 @@ export default function Investigations({ transactions, investigations, onChanged
 
   return (
     <div className="space-y-6">
-      {/* Status filter pills */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider mr-2">
-          <FilterIcon className="w-3.5 h-3.5" />
-          Status
+      {/* Filter bar */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider mr-2">
+            <FilterIcon className="w-3.5 h-3.5" />
+            Status
+          </div>
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              filter === 'all'
+                ? 'bg-slate-900 text-white border-slate-900'
+                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            All<span className="ml-1.5 text-xs opacity-70">({latestPerTx.length})</span>
+          </button>
+          {ALL_STATUSES.map((s) => {
+            const meta = STATUS_META[s];
+            const active = filter === s;
+            return (
+              <button
+                key={s}
+                onClick={() => setFilter(s)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  active
+                    ? `${meta.classes} ring-2 ring-offset-1 ring-slate-200`
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {meta.label}
+                <span className="ml-1.5 text-xs opacity-70">({counts[s] || 0})</span>
+              </button>
+            );
+          })}
         </div>
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-            filter === 'all'
-              ? 'bg-slate-900 text-white border-slate-900'
-              : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-          }`}
-        >
-          All
-          <span className="ml-1.5 text-xs opacity-70">({latestPerTx.length})</span>
-        </button>
-        {ALL_STATUSES.map((s) => {
-          const meta = STATUS_META[s];
-          const active = filter === s;
-          return (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                active
-                  ? `${meta.classes} ring-2 ring-offset-1 ring-slate-200`
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              {meta.label}
-              <span className="ml-1.5 text-xs opacity-70">({counts[s] || 0})</span>
-            </button>
-          );
-        })}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider mr-2">
+            <UserCircle2 className="w-3.5 h-3.5" />
+            Reviewer
+          </div>
+          {(['all', 'mine', 'unassigned'] as const).map((opt) => {
+            const active = assigneeFilter === opt;
+            const label = opt === 'all' ? 'All cases' : opt === 'mine' ? `My cases (${me.split(' ')[0]})` : 'Unassigned';
+            const count = opt === 'all' ? latestPerTx.length : opt === 'mine' ? myCasesCount : unassignedCount;
+            return (
+              <button
+                key={opt}
+                onClick={() => setAssigneeFilter(opt)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                  active
+                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-offset-1 ring-slate-200'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {label}
+                <span className="ml-1.5 text-xs opacity-70">({count})</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="bg-slate-900 text-white rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-lg">
+          <span className="text-sm font-semibold">
+            {selectedIds.size} case{selectedIds.size === 1 ? '' : 's'} selected
+          </span>
+          <span className="h-4 w-px bg-slate-700" />
+          <button
+            onClick={() => bulkUpdate('cleared')}
+            disabled={bulkBusy}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 transition-colors"
+          >
+            Mark all Cleared
+          </button>
+          <button
+            onClick={() => bulkUpdate('escalated')}
+            disabled={bulkBusy}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-600 disabled:opacity-60 transition-colors"
+          >
+            Escalate all
+          </button>
+          <select
+            disabled={bulkBusy}
+            onChange={(e) => {
+              if (e.target.value) {
+                bulkAssign(e.target.value as AnalystName);
+                e.target.value = '';
+              }
+            }}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 disabled:opacity-60 transition-colors cursor-pointer"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Assign all to…
+            </option>
+            {ANALYSTS.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+          {bulkBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+          <button
+            onClick={clearSelection}
+            className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded text-xs text-slate-300 hover:text-white"
+          >
+            <X className="w-3 h-3" />
+            Cancel
+          </button>
+        </div>
+      )}
+
+      {/* Select-all toggle */}
+      {filtered.length > 0 && (
+        <label className="inline-flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={selectedIds.size === filtered.length && filtered.length > 0}
+            onChange={toggleSelectAll}
+            className="w-4 h-4 accent-blue-700 cursor-pointer"
+          />
+          Select all visible ({filtered.length})
+        </label>
+      )}
 
       {/* Cases */}
       <div className="space-y-4">
@@ -252,12 +459,29 @@ export default function Investigations({ transactions, investigations, onChanged
           const draft = notesDraft[String(inv.id)] ?? '';
           const stored = notes[String(inv.id)] ?? '';
           const noteDirty = draft !== stored;
+          const assignee: AnalystName = (assignees[String(inv.id)] as AnalystName) || 'Unassigned';
+          const isSelected = selectedIds.has(inv.id);
+          const auditEvents = getAuditLog(inv.id);
+          const timelineOpen = openTimelines.has(inv.id);
+          const sanctionsOpen = openSanctions.has(inv.id);
 
           return (
-            <div key={inv.id} className="bg-white rounded-2xl card-shadow overflow-hidden">
+            <div
+              key={inv.id}
+              className={`bg-white rounded-2xl card-shadow overflow-hidden transition-shadow ${
+                isSelected ? 'ring-2 ring-blue-500' : ''
+              }`}
+            >
               {/* Header */}
               <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(inv.id)}
+                    className="mt-2 w-4 h-4 accent-blue-700 cursor-pointer"
+                    aria-label={`Select case ${inv.id}`}
+                  />
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-sm shrink-0">
                     <Brain className="w-5 h-5 text-white" />
                   </div>
@@ -276,6 +500,20 @@ export default function Investigations({ transactions, investigations, onChanged
                     <p className="text-xs text-slate-500 mt-0.5">
                       Transaction #{inv.transaction_id} · Opened {formatRelative(inv.created_at)}
                     </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <UserCircle2 className="w-4 h-4 text-slate-400" />
+                      <select
+                        value={assignee}
+                        onChange={(e) => changeAssignee(inv.id, e.target.value as AnalystName)}
+                        className="text-xs font-semibold bg-white border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      >
+                        {ANALYSTS.map((a) => (
+                          <option key={a} value={a}>
+                            {a === me ? `${a} (me)` : a}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -405,8 +643,29 @@ export default function Investigations({ transactions, investigations, onChanged
                 </div>
               )}
 
+              {/* Sanctions panel toggle */}
+              {tx && (
+                <div className="px-6 pb-3">
+                  <button
+                    onClick={() => toggleSanctionsPanel(inv.id)}
+                    className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-blue-700" />
+                    {sanctionsOpen ? 'Hide' : 'Show'} sanctions screening
+                  </button>
+                  {sanctionsOpen && (
+                    <div className="mt-3">
+                      <SanctionsPanel
+                        senderAccount={tx.sender_account}
+                        receiverAccount={tx.receiver_account}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Analyst notes */}
-              <div className="px-6 pb-5">
+              <div className="px-6 pb-3">
                 <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 flex items-center gap-1.5">
@@ -438,6 +697,23 @@ export default function Investigations({ transactions, investigations, onChanged
                     className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px]"
                   />
                 </div>
+              </div>
+
+              {/* Audit timeline */}
+              <div className="px-6 pb-5">
+                <button
+                  onClick={() => toggleTimeline(inv.id)}
+                  className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5 mb-2"
+                >
+                  <History className="w-3.5 h-3.5 text-slate-500" />
+                  {timelineOpen ? 'Hide' : 'Show'} audit timeline
+                  <span className="text-slate-400 font-normal">({auditEvents.length} events)</span>
+                </button>
+                {timelineOpen && (
+                  <div className="border border-slate-200 rounded-lg p-4 bg-white">
+                    <AuditTimeline events={auditEvents} />
+                  </div>
+                )}
               </div>
             </div>
           );

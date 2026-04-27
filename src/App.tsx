@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Download, RefreshCw, ExternalLink, Clock, RotateCcw } from 'lucide-react';
+import { Download, RefreshCw, ExternalLink, Clock, RotateCcw, Radio, UserCircle2 } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TransactionList from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
@@ -13,6 +13,14 @@ import type { AlertFilters } from './components/AlertsFilterBar';
 import { supabase } from './supabaseClient';
 import { AlertTriangle, FileCheck, TrendingUp } from 'lucide-react';
 import type { SupabaseTransaction, Investigation } from './types';
+import {
+  ANALYSTS,
+  type AnalystName,
+  getCurrentAnalyst,
+  setCurrentAnalyst,
+  clearAuditLog,
+  clearAssignees,
+} from './services/sessionStore';
 
 type Page = 'landing' | 'demo' | 'casestudy';
 
@@ -28,6 +36,8 @@ function App() {
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
   const [filters, setFilters] = useState<AlertFilters>(DEFAULT_FILTERS);
   const [focusedAccount, setFocusedAccount] = useState<string | null>(null);
+  const [liveMode, setLiveMode] = useState(false);
+  const [analyst, setAnalyst] = useState<AnalystName>(getCurrentAnalyst());
   const [, setTick] = useState(0);
 
   // ─── Data fetching ────────────────────────────────────────────────────────
@@ -52,12 +62,14 @@ function App() {
     try {
       // Delete all investigations (DB-side); fall back to gt(0) which matches every row
       await supabase.from('investigations').delete().gt('id', 0);
-      // Clear analyst notes (sessionStorage)
+      // Clear analyst notes, audit log, assignees (sessionStorage)
       try {
         sessionStorage.removeItem('cleartrace_analyst_notes');
       } catch {
         // ignore
       }
+      clearAuditLog();
+      clearAssignees();
       await fetchAll();
     } finally {
       if (!silent) setTimeout(() => setResetting(false), 400);
@@ -86,6 +98,24 @@ function App() {
       if (tickRef.current) window.clearInterval(tickRef.current);
     };
   }, [page]);
+
+  // ─── Live mode: auto-refresh every 30s when enabled ──────────────────────
+  const liveTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (page !== 'demo' || !liveMode) {
+      if (liveTimerRef.current) {
+        window.clearInterval(liveTimerRef.current);
+        liveTimerRef.current = null;
+      }
+      return;
+    }
+    liveTimerRef.current = window.setInterval(() => {
+      fetchAll();
+    }, 30_000);
+    return () => {
+      if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
+    };
+  }, [page, liveMode, fetchAll]);
 
   if (page === 'landing') {
     return (
@@ -174,15 +204,37 @@ function App() {
         />
 
         <main className="flex-1 overflow-auto">
-          {/* Top bar with back links */}
-          <div className="border-b border-slate-200 bg-white px-8 py-2.5 flex items-center justify-between">
+          {/* Top bar with back links + analyst selector */}
+          <div className="border-b border-slate-200 bg-white px-8 py-2.5 flex items-center justify-between gap-3 flex-wrap">
             <button
               onClick={() => setPage('landing')}
               className="text-xs text-slate-500 hover:text-slate-900 transition-colors font-medium"
             >
               ← Back to overview
             </button>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-3 text-xs">
+              <label className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
+                <UserCircle2 className="w-3.5 h-3.5 text-slate-400" />
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
+                  Signed in as
+                </span>
+                <select
+                  value={analyst}
+                  onChange={(e) => {
+                    const v = e.target.value as AnalystName;
+                    setAnalyst(v);
+                    setCurrentAnalyst(v);
+                  }}
+                  className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                >
+                  {ANALYSTS.filter((a) => a !== 'Unassigned').map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span className="h-3 w-px bg-slate-200" />
               <button
                 onClick={() => setPage('casestudy')}
                 className="text-blue-700 hover:text-blue-900 font-semibold transition-colors flex items-center gap-1"
@@ -215,17 +267,39 @@ function App() {
                     </span>
                   )}
                   <button
+                    onClick={() => setLiveMode((v) => !v)}
+                    title={liveMode ? 'Auto-refreshing every 30s — click to pause' : 'Enable live auto-refresh (30s)'}
+                    className={`px-3 py-2 rounded-lg border flex items-center gap-2 transition-all font-medium text-sm ${
+                      liveMode
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
+                    }`}
+                  >
+                    <span className="relative flex h-2 w-2">
+                      {liveMode && (
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-70" />
+                      )}
+                      <span
+                        className={`relative inline-flex rounded-full h-2 w-2 ${
+                          liveMode ? 'bg-emerald-500' : 'bg-slate-400'
+                        }`}
+                      />
+                    </span>
+                    <Radio className="w-3.5 h-3.5" />
+                    <span>{liveMode ? 'Live' : 'Live mode off'}</span>
+                  </button>
+                  <button
                     onClick={() => {
                       if (
                         window.confirm(
-                          'Reset the demo? This will clear all investigations and analyst notes.'
+                          'Reset the demo? This will clear all investigations, analyst notes, audit log and assignments.'
                         )
                       ) {
                         resetDemo();
                       }
                     }}
                     disabled={resetting || refreshing}
-                    title="Clear all investigations and notes (demo only)"
+                    title="Clear all investigations, notes, audit log and assignments (demo only)"
                     className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium disabled:opacity-60"
                   >
                     <RotateCcw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} />

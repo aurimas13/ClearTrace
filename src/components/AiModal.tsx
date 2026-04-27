@@ -1,5 +1,6 @@
-import { X, Brain, ShieldAlert } from 'lucide-react';
+import { X, Brain, ShieldAlert, Shield } from 'lucide-react';
 import type { SupabaseTransaction } from './TransactionList';
+import SanctionsPanel from './SanctionsPanel';
 
 interface AiModalProps {
   transaction: SupabaseTransaction;
@@ -14,7 +15,7 @@ export default function AiModal({ transaction, summary, onClose }: AiModalProps)
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg mx-4 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
@@ -58,11 +59,27 @@ export default function AiModal({ transaction, summary, onClose }: AiModalProps)
           </div>
         </div>
 
-        {/* AI Summary */}
-        <div className="px-6 py-5 bg-gradient-to-b from-amber-50/60 to-white">
-          <div className="flex items-start gap-3">
-            <ShieldAlert className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        {/* Body (scrollable) */}
+        <div className="flex-1 overflow-y-auto">
+          {/* AI Summary */}
+          <div className="px-6 py-5 bg-gradient-to-b from-amber-50/60 to-white">
+            <div className="text-xs uppercase tracking-wider font-bold text-slate-700 mb-2 flex items-center gap-1.5">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+              AI Investigation Summary
+            </div>
             <p className="text-slate-700 text-sm leading-relaxed">{summary}</p>
+          </div>
+
+          {/* Sanctions screening */}
+          <div className="px-6 py-5 border-t border-slate-200">
+            <div className="text-xs uppercase tracking-wider font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-blue-700" />
+              Sanctions &amp; Watchlist Screening
+            </div>
+            <SanctionsPanel
+              senderAccount={transaction.sender_account}
+              receiverAccount={transaction.receiver_account}
+            />
           </div>
         </div>
 
