@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1230"/>
+      <stop offset="55%" stop-color="#101a4a"/>
+      <stop offset="100%" stop-color="#1d1452"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.85" cy="0.10" r="0.7">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.05" cy="0.95" r="0.7">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+    <linearGradient id="arcRed" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#ef4444" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="arcAmber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="arcGreen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#34d399" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.15"/>
+    </linearGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+    </pattern>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <rect width="1200" height="1200" fill="url(#grid)"/>
+  <rect width="1200" height="1200" fill="url(#glow)"/>
+  <rect width="1200" height="1200" fill="url(#glow2)"/>
+
+  <!-- Logo + wordmark, centered -->
+  <g transform="translate(600, 130)" text-anchor="middle">
+    <g transform="translate(-40, -20)">
+      <rect x="0" y="0" width="80" height="80" rx="20" fill="url(#markGrad)"/>
+      <g transform="translate(18, 16)" stroke="#ffffff" stroke-width="3.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 5 H30 L40 15 V46 H7 Z" fill="rgba(255,255,255,0.08)"/>
+        <circle cx="23" cy="30" r="6.5"/>
+        <path d="M28.5 35 L33 40"/>
+      </g>
+    </g>
+    <text y="100" fill="#ffffff" font-size="38" font-weight="800" letter-spacing="-0.5">ClearTrace</text>
+    <text y="130" fill="#94a3b8" font-size="14" font-weight="600" letter-spacing="2.5">AML INTELLIGENCE SUITE</text>
+  </g>
+
+  <!-- Headline -->
+  <g transform="translate(600, 320)" text-anchor="middle">
+    <text fill="#ffffff" font-size="68" font-weight="800" letter-spacing="-1.5">
+      <tspan x="0" y="0">Catch financial crime</tspan>
+      <tspan x="0" y="80">in <tspan fill="url(#markGrad)" font-weight="900">real time.</tspan></tspan>
+    </text>
+  </g>
+
+  <!-- Subheadline -->
+  <g transform="translate(600, 500)" text-anchor="middle">
+    <text fill="#cbd5e1" font-size="22" font-weight="500">
+      <tspan x="0" y="0">A compliance-grade demo turning raw transaction</tspan>
+      <tspan x="0" y="32">flows into auditable, examiner-ready intelligence.</tspan>
+    </text>
+  </g>
+
+  <!-- ───── Product collage row ───── -->
+
+  <!-- KPI tiles strip -->
+  <g transform="translate(110, 620)">
+    <rect width="980" height="100" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <g transform="translate(40, 24)">
+      <text fill="#94a3b8" font-size="12" font-weight="700" letter-spacing="1.4">ALERTS TODAY</text>
+      <text y="42" fill="#ffffff" font-size="36" font-weight="800">147</text>
+      <text y="68" fill="#34d399" font-size="13" font-weight="600">▲ 12% vs avg</text>
+    </g>
+    <line x1="285" y1="22" x2="285" y2="78" stroke="#ffffff" stroke-opacity="0.1"/>
+    <g transform="translate(330, 24)">
+      <text fill="#94a3b8" font-size="12" font-weight="700" letter-spacing="1.4">ALERT → SAR</text>
+      <text y="42" fill="#ffffff" font-size="36" font-weight="800">15.6%</text>
+      <text y="68" fill="#fbbf24" font-size="13" font-weight="600">23 SARs filed</text>
+    </g>
+    <line x1="615" y1="22" x2="615" y2="78" stroke="#ffffff" stroke-opacity="0.1"/>
+    <g transform="translate(660, 24)">
+      <text fill="#94a3b8" font-size="12" font-weight="700" letter-spacing="1.4">MEDIAN SLA</text>
+      <text y="42" fill="#ffffff" font-size="36" font-weight="800">14m</text>
+      <text y="68" fill="#34d399" font-size="13" font-weight="600">open → disposition</text>
+    </g>
+  </g>
+
+  <!-- World map / risk corridors -->
+  <g transform="translate(110, 740)">
+    <rect width="600" height="320" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="28" y="36" fill="#cbd5e1" font-size="12" font-weight="700" letter-spacing="1.6">CROSS-BORDER RISK CORRIDORS</text>
+
+    <g transform="translate(28, 56)" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12" stroke-width="0.6">
+      <path d="M40 90 Q30 40 88 32 Q132 28 156 72 Q172 118 140 156 Q100 170 64 156 Q32 132 40 90 Z"/>
+      <path d="M120 188 Q132 168 158 178 Q176 204 168 240 Q150 260 128 250 Q112 222 120 188 Z"/>
+      <path d="M276 72 Q284 46 320 52 Q352 60 354 86 Q346 112 318 116 Q284 112 276 72 Z"/>
+      <path d="M308 130 Q330 122 352 138 Q368 174 358 218 Q340 244 320 240 Q294 220 296 178 Q292 148 308 130 Z"/>
+      <path d="M376 58 Q414 44 472 56 Q524 76 536 114 Q526 156 480 164 Q424 162 388 138 Q364 104 376 58 Z"/>
+      <path d="M488 220 Q516 212 540 228 Q546 250 524 260 Q496 256 484 240 Q482 226 488 220 Z"/>
+    </g>
+
+    <g transform="translate(28, 56)" fill="none" stroke-linecap="round" filter="url(#softGlow)">
+      <path d="M100 116 Q172 44 200 144" stroke="url(#arcRed)" stroke-width="3.6" stroke-opacity="0.95"/>
+      <path d="M100 100 Q286 4 442 80" stroke="url(#arcRed)" stroke-width="3.0" stroke-opacity="0.85"/>
+      <path d="M304 86 Q368 36 412 116" stroke="url(#arcAmber)" stroke-width="2.8" stroke-opacity="0.9"/>
+      <path d="M498 100 Q502 156 504 222" stroke="url(#arcAmber)" stroke-width="2.4" stroke-opacity="0.8"/>
+      <path d="M306 80 Q200 22 112 100" stroke="url(#arcGreen)" stroke-width="2.0" stroke-opacity="0.75"/>
+      <path d="M148 224 Q244 188 320 188" stroke="url(#arcRed)" stroke-width="2.0" stroke-opacity="0.8"/>
+    </g>
+
+    <g transform="translate(28, 56)">
+      <g>
+        <circle cx="200" cy="144" r="13" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="200" cy="144" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.6"/>
+      </g>
+      <g>
+        <circle cx="442" cy="80" r="13" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="442" cy="80" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="1.6"/>
+      </g>
+      <g>
+        <circle cx="320" cy="188" r="11" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="320" cy="188" r="5" fill="#ef4444" stroke="#ffffff" stroke-width="1.4"/>
+      </g>
+      <circle cx="412" cy="116" r="5.2" fill="#fbbf24" stroke="#ffffff" stroke-width="1.4"/>
+      <circle cx="504" cy="222" r="5.0" fill="#fbbf24" stroke="#ffffff" stroke-width="1.4"/>
+      <circle cx="100" cy="108" r="4.8" fill="#34d399" stroke="#ffffff" stroke-width="1.3"/>
+      <circle cx="306" cy="84" r="4.8" fill="#34d399" stroke="#ffffff" stroke-width="1.3"/>
+    </g>
+
+    <g transform="translate(28, 282)" font-size="12" font-weight="600" fill="#cbd5e1">
+      <g>
+        <circle cx="6" cy="6" r="5" fill="#ef4444"/>
+        <text x="18" y="10">High-risk</text>
+      </g>
+      <g transform="translate(110, 0)">
+        <circle cx="6" cy="6" r="5" fill="#fbbf24"/>
+        <text x="18" y="10">Monitored</text>
+      </g>
+      <g transform="translate(225, 0)">
+        <circle cx="6" cy="6" r="5" fill="#34d399"/>
+        <text x="18" y="10">Standard</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Explainability card -->
+  <g transform="translate(730, 740)">
+    <rect width="360" height="320" rx="16" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="24" y="36" fill="#cbd5e1" font-size="11" font-weight="700" letter-spacing="1.4">WHY WAS THIS FLAGGED?</text>
+    <text x="24" y="56" fill="#94a3b8" font-size="11" font-weight="500">Model attributions · final 87% suspicious</text>
+
+    <g transform="translate(24, 90)" font-size="12" font-weight="600">
+      <g>
+        <text fill="#cbd5e1">Counterparty jurisdiction</text>
+        <text x="312" text-anchor="end" fill="#fca5a5" font-weight="700">+0.45</text>
+        <rect x="0" y="6" width="312" height="5" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="156" y1="3" x2="156" y2="14" stroke="#94a3b8" stroke-opacity="0.6"/>
+        <rect x="156" y="6" width="142" height="5" rx="2" fill="#ef4444"/>
+      </g>
+      <g transform="translate(0, 36)">
+        <text fill="#cbd5e1">Amount vs. CTR threshold</text>
+        <text x="312" text-anchor="end" fill="#fca5a5" font-weight="700">+0.35</text>
+        <rect x="0" y="6" width="312" height="5" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="156" y1="3" x2="156" y2="14" stroke="#94a3b8" stroke-opacity="0.6"/>
+        <rect x="156" y="6" width="110" height="5" rx="2" fill="#ef4444"/>
+      </g>
+      <g transform="translate(0, 72)">
+        <text fill="#cbd5e1">Behavioural typology</text>
+        <text x="312" text-anchor="end" fill="#fca5a5" font-weight="700">+0.30</text>
+        <rect x="0" y="6" width="312" height="5" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="156" y1="3" x2="156" y2="14" stroke="#94a3b8" stroke-opacity="0.6"/>
+        <rect x="156" y="6" width="94" height="5" rx="2" fill="#ef4444"/>
+      </g>
+      <g transform="translate(0, 108)">
+        <text fill="#cbd5e1">PEP exposure (BO chain)</text>
+        <text x="312" text-anchor="end" fill="#fca5a5" font-weight="700">+0.22</text>
+        <rect x="0" y="6" width="312" height="5" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="156" y1="3" x2="156" y2="14" stroke="#94a3b8" stroke-opacity="0.6"/>
+        <rect x="156" y="6" width="68" height="5" rx="2" fill="#ef4444"/>
+      </g>
+      <g transform="translate(0, 144)">
+        <text fill="#cbd5e1">KYC review recency</text>
+        <text x="312" text-anchor="end" fill="#86efac" font-weight="700">−0.04</text>
+        <rect x="0" y="6" width="312" height="5" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="156" y1="3" x2="156" y2="14" stroke="#94a3b8" stroke-opacity="0.6"/>
+        <rect x="142" y="6" width="14" height="5" rx="2" fill="#10b981"/>
+      </g>
+    </g>
+
+    <text x="24" y="288" fill="#94a3b8" font-size="10" font-weight="500" letter-spacing="0.2">Compliant with SR 11-7 model risk framework</text>
+  </g>
+
+  <!-- CTA -->
+  <g transform="translate(600, 1110)" text-anchor="middle">
+    <text fill="#ffffff" font-size="18" font-weight="700" letter-spacing="0.4">
+      cleartrace.aurimas.io
+    </text>
+    <text y="26" fill="#94a3b8" font-size="13" font-weight="500">Live demo · Built by Aurimas Nausėdas</text>
+  </g>
+</svg>

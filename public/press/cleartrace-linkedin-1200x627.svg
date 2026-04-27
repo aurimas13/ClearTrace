@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 627" width="1200" height="627" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <!-- Background gradient (deep navy → indigo) -->
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1230"/>
+      <stop offset="55%" stop-color="#101a4a"/>
+      <stop offset="100%" stop-color="#1d1452"/>
+    </linearGradient>
+
+    <!-- Accent glow -->
+    <radialGradient id="glow" cx="0.85" cy="0.15" r="0.7">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.05" cy="0.95" r="0.7">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Brand mark gradient -->
+    <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="55%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+
+    <!-- Card background -->
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- Corridor arc gradient -->
+    <linearGradient id="arcRed" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#dc2626" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#ef4444" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#dc2626" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="arcAmber" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#fbbf24" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.15"/>
+    </linearGradient>
+    <linearGradient id="arcGreen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+      <stop offset="50%" stop-color="#34d399" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.15"/>
+    </linearGradient>
+
+    <!-- Subtle grid pattern -->
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="0.5"/>
+    </pattern>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Backdrop -->
+  <rect width="1200" height="627" fill="url(#bg)"/>
+  <rect width="1200" height="627" fill="url(#grid)"/>
+  <rect width="1200" height="627" fill="url(#glow)"/>
+  <rect width="1200" height="627" fill="url(#glow2)"/>
+
+  <!-- ───── LEFT COLUMN — wordmark, headline, CTA ───── -->
+
+  <!-- Logo + wordmark -->
+  <g transform="translate(64, 64)">
+    <rect x="0" y="0" width="56" height="56" rx="14" fill="url(#markGrad)"/>
+    <!-- Magnifier-style FileSearch glyph -->
+    <g transform="translate(12, 10)" stroke="#ffffff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 4 H22 L29 11 V32 H5 Z" fill="rgba(255,255,255,0.08)"/>
+      <circle cx="17" cy="22" r="4.5"/>
+      <path d="M20.5 25.5 L24 29"/>
+    </g>
+    <text x="74" y="26" fill="#ffffff" font-size="26" font-weight="800" letter-spacing="-0.5">ClearTrace</text>
+    <text x="74" y="48" fill="#94a3b8" font-size="13" font-weight="500" letter-spacing="0.5">AML INTELLIGENCE SUITE</text>
+  </g>
+
+  <!-- Headline -->
+  <g transform="translate(64, 178)">
+    <text fill="#ffffff" font-size="56" font-weight="800" letter-spacing="-1.5">
+      <tspan x="0" y="0">Catch financial</tspan>
+      <tspan x="0" y="64">crime in </tspan>
+      <tspan fill="url(#markGrad)" font-weight="900">real time.</tspan>
+    </text>
+  </g>
+
+  <!-- Subheadline -->
+  <g transform="translate(64, 332)">
+    <text fill="#cbd5e1" font-size="18" font-weight="500" letter-spacing="0">
+      <tspan x="0" y="0">A compliance-grade demo that turns raw transaction</tspan>
+      <tspan x="0" y="26">flows into auditable intelligence — typology detection,</tspan>
+      <tspan x="0" y="52">explainable AI scoring, and SAR-ready case files.</tspan>
+    </text>
+  </g>
+
+  <!-- Feature pills -->
+  <g transform="translate(64, 432)" font-size="12" font-weight="700" letter-spacing="0.4">
+    <g>
+      <rect x="0" y="0" width="160" height="28" rx="14" fill="rgba(59, 130, 246, 0.15)" stroke="rgba(59, 130, 246, 0.45)"/>
+      <text x="80" y="18" text-anchor="middle" fill="#93c5fd">EXPLAINABLE AI</text>
+    </g>
+    <g transform="translate(170, 0)">
+      <rect x="0" y="0" width="170" height="28" rx="14" fill="rgba(167, 139, 250, 0.15)" stroke="rgba(167, 139, 250, 0.45)"/>
+      <text x="85" y="18" text-anchor="middle" fill="#c4b5fd">FATF JURISDICTIONS</text>
+    </g>
+    <g transform="translate(0, 38)">
+      <rect x="0" y="0" width="160" height="28" rx="14" fill="rgba(16, 185, 129, 0.15)" stroke="rgba(16, 185, 129, 0.45)"/>
+      <text x="80" y="18" text-anchor="middle" fill="#6ee7b7">DOCUMENT AI</text>
+    </g>
+    <g transform="translate(170, 38)">
+      <rect x="0" y="0" width="170" height="28" rx="14" fill="rgba(244, 114, 182, 0.15)" stroke="rgba(244, 114, 182, 0.45)"/>
+      <text x="85" y="18" text-anchor="middle" fill="#f9a8d4">REAL-TIME ALERTS</text>
+    </g>
+  </g>
+
+  <!-- CTA -->
+  <g transform="translate(64, 540)">
+    <rect x="0" y="0" width="280" height="48" rx="10" fill="url(#markGrad)"/>
+    <text x="140" y="31" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="700" letter-spacing="0.4">
+      cleartrace.aurimas.io  →
+    </text>
+    <text x="296" y="31" fill="#cbd5e1" font-size="13" font-weight="500">Built by Aurimas Nausėdas</text>
+  </g>
+
+  <!-- ───── RIGHT COLUMN — product collage ───── -->
+
+  <!-- KPI strip (top right) -->
+  <g transform="translate(700, 80)">
+    <rect width="436" height="78" rx="14" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <!-- Tile 1 -->
+    <g transform="translate(20, 14)">
+      <text fill="#94a3b8" font-size="9.5" font-weight="700" letter-spacing="1.2">ALERTS TODAY</text>
+      <text x="0" y="34" fill="#ffffff" font-size="28" font-weight="800">147</text>
+      <text x="0" y="52" fill="#34d399" font-size="11" font-weight="600">▲ 12% vs avg</text>
+    </g>
+    <line x1="148" y1="14" x2="148" y2="64" stroke="#ffffff" stroke-opacity="0.1"/>
+    <!-- Tile 2 -->
+    <g transform="translate(168, 14)">
+      <text fill="#94a3b8" font-size="9.5" font-weight="700" letter-spacing="1.2">SAR FILED</text>
+      <text x="0" y="34" fill="#ffffff" font-size="28" font-weight="800">23</text>
+      <text x="0" y="52" fill="#fbbf24" font-size="11" font-weight="600">15.6% conversion</text>
+    </g>
+    <line x1="296" y1="14" x2="296" y2="64" stroke="#ffffff" stroke-opacity="0.1"/>
+    <!-- Tile 3 -->
+    <g transform="translate(316, 14)">
+      <text fill="#94a3b8" font-size="9.5" font-weight="700" letter-spacing="1.2">MEDIAN SLA</text>
+      <text x="0" y="34" fill="#ffffff" font-size="28" font-weight="800">14m</text>
+      <text x="0" y="52" fill="#34d399" font-size="11" font-weight="600">within target</text>
+    </g>
+  </g>
+
+  <!-- World map / risk corridors card -->
+  <g transform="translate(700, 178)">
+    <rect width="436" height="232" rx="14" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="20" y="28" fill="#cbd5e1" font-size="10.5" font-weight="700" letter-spacing="1.4">CROSS-BORDER RISK CORRIDORS</text>
+
+    <!-- Stylised continents (rough blobs) -->
+    <g transform="translate(20, 44)" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.12" stroke-width="0.5">
+      <!-- N America -->
+      <path d="M28 60 Q22 28 60 22 Q92 18 108 50 Q120 82 96 110 Q70 120 44 110 Q22 92 28 60 Z"/>
+      <!-- S America -->
+      <path d="M84 130 Q92 116 110 124 Q124 142 116 168 Q104 182 88 174 Q78 154 84 130 Z"/>
+      <!-- Europe -->
+      <path d="M192 50 Q198 32 224 36 Q244 42 246 60 Q240 78 220 80 Q198 78 192 50 Z"/>
+      <!-- Africa -->
+      <path d="M212 90 Q230 84 246 96 Q256 122 248 152 Q236 170 220 168 Q204 154 208 124 Q204 102 212 90 Z"/>
+      <!-- Asia -->
+      <path d="M260 40 Q288 28 332 38 Q372 52 380 80 Q374 110 340 116 Q298 114 270 96 Q254 72 260 40 Z"/>
+      <!-- Oceania -->
+      <path d="M340 152 Q360 146 376 158 Q380 172 366 180 Q346 178 338 168 Q336 158 340 152 Z"/>
+    </g>
+
+    <!-- Risk corridor arcs -->
+    <g transform="translate(20, 44)" fill="none" stroke-linecap="round" filter="url(#softGlow)">
+      <!-- USA → Cayman (high risk red) -->
+      <path d="M70 80 Q120 30 140 100" stroke="url(#arcRed)" stroke-width="2.8" stroke-opacity="0.95"/>
+      <!-- USA → Russia (red) -->
+      <path d="M70 70 Q200 4 308 56" stroke="url(#arcRed)" stroke-width="2.4" stroke-opacity="0.85"/>
+      <!-- UK → UAE (amber) -->
+      <path d="M212 60 Q256 24 288 80" stroke="url(#arcAmber)" stroke-width="2.2" stroke-opacity="0.9"/>
+      <!-- HK → Singapore (amber) -->
+      <path d="M348 70 Q352 110 352 154" stroke="url(#arcAmber)" stroke-width="1.8" stroke-opacity="0.8"/>
+      <!-- DE → US (green) -->
+      <path d="M214 56 Q140 16 78 70" stroke="url(#arcGreen)" stroke-width="1.6" stroke-opacity="0.7"/>
+      <!-- BR → ZA (red) -->
+      <path d="M104 156 Q170 132 220 130" stroke="url(#arcRed)" stroke-width="1.6" stroke-opacity="0.75"/>
+    </g>
+
+    <!-- Markers (high-risk pulsing) -->
+    <g transform="translate(20, 44)">
+      <!-- High risk markers -->
+      <g>
+        <circle cx="140" cy="100" r="9" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="140" cy="100" r="4.2" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"/>
+      </g>
+      <g>
+        <circle cx="308" cy="56" r="9" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="308" cy="56" r="4.2" fill="#ef4444" stroke="#ffffff" stroke-width="1.2"/>
+      </g>
+      <g>
+        <circle cx="220" cy="130" r="8" fill="#ef4444" fill-opacity="0.18"/>
+        <circle cx="220" cy="130" r="3.6" fill="#ef4444" stroke="#ffffff" stroke-width="1.1"/>
+      </g>
+      <!-- Monitored -->
+      <circle cx="288" cy="80" r="3.6" fill="#fbbf24" stroke="#ffffff" stroke-width="1.1"/>
+      <circle cx="352" cy="154" r="3.4" fill="#fbbf24" stroke="#ffffff" stroke-width="1.1"/>
+      <!-- Standard -->
+      <circle cx="70" cy="76" r="3.2" fill="#34d399" stroke="#ffffff" stroke-width="1"/>
+      <circle cx="212" cy="58" r="3.2" fill="#34d399" stroke="#ffffff" stroke-width="1"/>
+    </g>
+
+    <!-- Legend -->
+    <g transform="translate(20, 200)" font-size="10" font-weight="600" fill="#cbd5e1">
+      <g>
+        <circle cx="6" cy="6" r="4" fill="#ef4444"/>
+        <text x="16" y="10">High-risk · 18</text>
+      </g>
+      <g transform="translate(110, 0)">
+        <circle cx="6" cy="6" r="4" fill="#fbbf24"/>
+        <text x="16" y="10">Monitored · 32</text>
+      </g>
+      <g transform="translate(232, 0)">
+        <circle cx="6" cy="6" r="4" fill="#34d399"/>
+        <text x="16" y="10">Standard · 196</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- AI explainability mini-card -->
+  <g transform="translate(700, 430)">
+    <rect width="436" height="160" rx="14" fill="url(#card)" stroke="#ffffff" stroke-opacity="0.08"/>
+    <text x="20" y="28" fill="#cbd5e1" font-size="10.5" font-weight="700" letter-spacing="1.4">WHY WAS THIS FLAGGED? — MODEL ATTRIBUTIONS</text>
+
+    <!-- Bars -->
+    <g transform="translate(20, 50)" font-size="11" font-weight="600">
+      <!-- Row 1 -->
+      <g>
+        <text fill="#cbd5e1">Counterparty jurisdiction</text>
+        <text x="396" text-anchor="end" fill="#fca5a5" font-weight="700">+0.45</text>
+        <rect x="0" y="6" width="396" height="4" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="198" y1="4" x2="198" y2="14" stroke="#94a3b8" stroke-opacity="0.6" stroke-width="0.8"/>
+        <rect x="198" y="6" width="180" height="4" rx="2" fill="#ef4444"/>
+      </g>
+      <!-- Row 2 -->
+      <g transform="translate(0, 28)">
+        <text fill="#cbd5e1">Amount vs. CTR threshold</text>
+        <text x="396" text-anchor="end" fill="#fca5a5" font-weight="700">+0.35</text>
+        <rect x="0" y="6" width="396" height="4" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="198" y1="4" x2="198" y2="14" stroke="#94a3b8" stroke-opacity="0.6" stroke-width="0.8"/>
+        <rect x="198" y="6" width="138" height="4" rx="2" fill="#ef4444"/>
+      </g>
+      <!-- Row 3 -->
+      <g transform="translate(0, 56)">
+        <text fill="#cbd5e1">Behavioural typology match</text>
+        <text x="396" text-anchor="end" fill="#fca5a5" font-weight="700">+0.30</text>
+        <rect x="0" y="6" width="396" height="4" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="198" y1="4" x2="198" y2="14" stroke="#94a3b8" stroke-opacity="0.6" stroke-width="0.8"/>
+        <rect x="198" y="6" width="120" height="4" rx="2" fill="#ef4444"/>
+      </g>
+      <!-- Row 4 (negative) -->
+      <g transform="translate(0, 84)">
+        <text fill="#cbd5e1">KYC review recency</text>
+        <text x="396" text-anchor="end" fill="#86efac" font-weight="700">−0.04</text>
+        <rect x="0" y="6" width="396" height="4" rx="2" fill="#ffffff" fill-opacity="0.06"/>
+        <line x1="198" y1="4" x2="198" y2="14" stroke="#94a3b8" stroke-opacity="0.6" stroke-width="0.8"/>
+        <rect x="178" y="6" width="20" height="4" rx="2" fill="#10b981"/>
+      </g>
+    </g>
+  </g>
+</svg>
