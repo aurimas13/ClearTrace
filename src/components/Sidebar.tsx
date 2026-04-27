@@ -3,13 +3,18 @@ import { AlertTriangle, FileSearch, Database, ExternalLink } from 'lucide-react'
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  counts?: {
+    alerts?: number;
+    investigations?: number;
+    pipelines?: number;
+  };
 }
 
-export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, counts }: SidebarProps) {
   const menuItems = [
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
-    { id: 'investigations', label: 'Investigations', icon: FileSearch },
-    { id: 'pipelines', label: 'Data Pipelines', icon: Database },
+    { id: 'alerts', label: 'Alerts', icon: AlertTriangle, count: counts?.alerts },
+    { id: 'investigations', label: 'Investigations', icon: FileSearch, count: counts?.investigations },
+    { id: 'pipelines', label: 'Data Pipelines', icon: Database, count: counts?.pipelines },
   ];
 
   return (
@@ -42,7 +47,18 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'text-blue-700' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {typeof item.count === 'number' && item.count > 0 && (
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      isActive
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {item.count}
+                  </span>
+                )}
               </button>
             );
           })}

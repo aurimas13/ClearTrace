@@ -154,19 +154,19 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
             AI-Powered AML Investigation Platform
           </div>
 
-          {/* Headline */}
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.05] mb-6 tracking-tight">
-            Stop Chasing False Positives.
-            <br />
-            <span className="text-gradient-brand">
-              Start Investigating Smarter.
-            </span>
+          {/* Headline — both lines stay on one line at any zoom, identical size via clamp() */}
+          <h1
+            className="font-extrabold text-slate-900 leading-[1.08] mb-6 tracking-tight"
+            style={{ fontSize: 'clamp(1.75rem, 6.2vw, 5rem)' }}
+          >
+            <span className="block whitespace-nowrap">Stop Chasing False Positives.</span>
+            <span className="block whitespace-nowrap text-gradient-brand">Start Investigating Smarter.</span>
           </h1>
 
           {/* Problem statement */}
           <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
             Fraud analysts spend <span className="text-slate-900 font-semibold">over 60% of their time</span> on manual transaction review and SAR preparation.
-            ClearTrace streamlines threat investigation by using LLM-orchestrated tools to highlight real risks, map financial flows, and draft reports—empowering analysts to focus on decision-making while maintaining human oversight.
+            ClearTrace streamlines threat investigation by using LLM-orchestrated tools to highlight real risks, map financial flows, and draft reports - empowering analysts to focus on decision-making while maintaining human oversight.
           </p>
 
           {/* CTA buttons */}

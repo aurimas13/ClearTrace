@@ -1,14 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Filter, Download, RefreshCw, ExternalLink } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Filter, Download, RefreshCw, ExternalLink, Clock } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TransactionList from './components/TransactionList';
-import type { SupabaseTransaction } from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
 import StatCard from './components/StatCard';
 import LandingPage from './components/LandingPage';
 import CaseStudy from './components/CaseStudy';
+import Investigations from './components/Investigations';
+import DataPipelines from './components/DataPipelines';
 import { supabase } from './supabaseClient';
 import { AlertTriangle, FileCheck, TrendingUp } from 'lucide-react';
+import type { SupabaseTransaction, Investigation } from './types';
 
 type Page = 'landing' | 'demo' | 'casestudy';
 
@@ -16,22 +18,39 @@ function App() {
   const [page, setPage] = useState<Page>('landing');
   const [activeTab, setActiveTab] = useState('alerts');
   const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
+  const [investigations, setInvestigations] = useState<Investigation[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [, setTick] = useState(0); // forces re-render every 10s for relative timestamps
 
-  async function fetchTransactions() {
-    const { data, error } = await supabase
-      .from('transactions')
-      .select('*')
-      .order('transaction_date', { ascending: false });
-
-    if (!error && data) {
-      setTransactions(data);
+  const fetchAll = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const [txRes, invRes] = await Promise.all([
+        supabase.from('transactions').select('*').order('transaction_date', { ascending: false }),
+        supabase.from('investigations').select('*').order('created_at', { ascending: false }),
+      ]);
+      if (!txRes.error && txRes.data) setTransactions(txRes.data);
+      if (!invRes.error && invRes.data) setInvestigations(invRes.data);
+      setLastRefreshed(new Date());
+    } finally {
+      // Keep the spin visible for at least 400ms so the refresh feels responsive
+      setTimeout(() => setRefreshing(false), 400);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    if (page === 'demo') {
-      fetchTransactions();
-    }
+    if (page === 'demo') fetchAll();
+  }, [page, fetchAll]);
+
+  // Tick every 10s so "Last updated Xs ago" stays accurate
+  const tickRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (page !== 'demo') return;
+    tickRef.current = window.setInterval(() => setTick((t) => t + 1), 10_000);
+    return () => {
+      if (tickRef.current) window.clearInterval(tickRef.current);
+    };
   }, [page]);
 
   if (page === 'landing') {
@@ -45,23 +64,43 @@ function App() {
 
   if (page === 'casestudy') {
     return (
-      <CaseStudy
-        onBack={() => setPage('landing')}
-        onEnterDemo={() => setPage('demo')}
-      />
+      <CaseStudy onBack={() => setPage('landing')} onEnterDemo={() => setPage('demo')} />
     );
   }
 
-  const highRiskCount = transactions.filter(t => t.risk_score >= 80).length;
-  const pendingReviewCount = transactions.filter(t => t.is_flagged).length;
+  // ─── Dashboard derived metrics ────────────────────────────────────────────
+  const investigatedTxIds = new Set(investigations.map((i) => i.transaction_id));
+  const openInvestigations = investigations.filter((i) => i.investigation_status === 'open').length;
+  const highRiskCount = transactions.filter((t) => t.risk_score >= 80).length;
+  const pendingReviewCount = transactions.filter((t) => t.is_flagged && !investigatedTxIds.has(t.id)).length;
   const avgRiskScore = transactions.length
     ? Math.round(transactions.reduce((sum, t) => sum + t.risk_score, 0) / transactions.length)
     : 0;
 
+  const tabTitle =
+    activeTab === 'alerts'
+      ? 'Alert Dashboard'
+      : activeTab === 'investigations'
+      ? 'Active Investigations'
+      : 'Data Pipelines';
+  const tabSubtitle =
+    activeTab === 'alerts'
+      ? 'Real-time monitoring of suspicious financial activities'
+      : activeTab === 'investigations'
+      ? 'Review AI investigation summaries and set case dispositions'
+      : 'Source-system ingestion health, throughput and audit trail';
+
   return (
     <div className="min-h-screen bg-[#fafbff] flex flex-col">
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+        <Sidebar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          counts={{
+            alerts: pendingReviewCount,
+            investigations: openInvestigations,
+          }}
+        />
 
         <main className="flex-1 overflow-auto">
           {/* Top bar with back links */}
@@ -92,18 +131,18 @@ function App() {
 
           <div className="p-8">
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">
-                    {activeTab === 'alerts' && 'Alert Dashboard'}
-                    {activeTab === 'investigations' && 'Active Investigations'}
-                    {activeTab === 'pipelines' && 'Data Pipelines'}
-                  </h2>
-                  <p className="text-slate-600">
-                    Real-time monitoring of suspicious financial activities
-                  </p>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">{tabTitle}</h2>
+                  <p className="text-slate-600">{tabSubtitle}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                  {lastRefreshed && (
+                    <span className="text-xs text-slate-500 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" />
+                      Updated {formatRelative(lastRefreshed)}
+                    </span>
+                  )}
                   <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
                     <Filter className="w-4 h-4" />
                     <span>Filter</span>
@@ -112,9 +151,13 @@ function App() {
                     <Download className="w-4 h-4" />
                     <span>Export</span>
                   </button>
-                  <button onClick={fetchTransactions} className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg flex items-center gap-2 transition-all primary-shadow font-semibold">
-                    <RefreshCw className="w-4 h-4" />
-                    <span>Refresh</span>
+                  <button
+                    onClick={fetchAll}
+                    disabled={refreshing}
+                    className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg flex items-center gap-2 transition-all primary-shadow font-semibold disabled:opacity-70"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    <span>{refreshing ? 'Refreshing…' : 'Refresh'}</span>
                   </button>
                 </div>
               </div>
@@ -155,40 +198,35 @@ function App() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-semibold text-slate-900">Flagged Transactions</h3>
                     <span className="text-sm text-slate-600">
-                      Showing {transactions.length} transactions
+                      Showing {transactions.length} transactions ·{' '}
+                      <span className="text-emerald-700 font-medium">
+                        {investigations.length} reviewed
+                      </span>
                     </span>
                   </div>
-                  <TransactionList transactions={transactions} />
+                  <TransactionList
+                    transactions={transactions}
+                    investigations={investigations}
+                    onInvestigated={fetchAll}
+                  />
                 </div>
               </div>
             )}
 
             {activeTab === 'investigations' && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-                <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileCheck className="w-8 h-8 text-blue-700" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Active Investigations</h3>
-                  <p className="text-slate-600">
-                    Investigation case management and detailed transaction analysis will appear here
-                  </p>
-                </div>
-              </div>
+              <Investigations
+                transactions={transactions}
+                investigations={investigations}
+                onChanged={fetchAll}
+              />
             )}
 
             {activeTab === 'pipelines' && (
-              <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-                <div className="max-w-md mx-auto">
-                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <RefreshCw className="w-8 h-8 text-blue-700" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-2">Data Pipeline Status</h3>
-                  <p className="text-slate-600">
-                    Real-time data ingestion monitoring and pipeline health metrics will appear here
-                  </p>
-                </div>
-              </div>
+              <DataPipelines
+                transactions={transactions}
+                investigations={investigations}
+                lastRefreshed={lastRefreshed}
+              />
             )}
           </div>
         </main>
@@ -228,6 +266,17 @@ function App() {
       </footer>
     </div>
   );
+}
+
+function formatRelative(d: Date) {
+  const diffMs = Date.now() - d.getTime();
+  const sec = Math.floor(diffMs / 1000);
+  if (sec < 5) return 'just now';
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hrs = Math.floor(min / 60);
+  return `${hrs}h ago`;
 }
 
 export default App;
