@@ -6,6 +6,7 @@
  */
 
 import type { Investigation, SupabaseTransaction } from '../types';
+import { caseDisplayId, sarReferenceId } from '../types';
 import { getCustomerRiskProfile } from './customerRisk';
 import { classifyTransaction } from './typology';
 import { getAuditLog, getAssignee } from './sessionStore';
@@ -119,7 +120,7 @@ export function exportInvestigationsCsv(
     const tys = tx ? classifyTransaction(tx).map((x) => x.label).join(' | ') : '';
     const audit = getAuditLog(inv.id);
     return [
-      `INV-${String(inv.id).padStart(4, '0')}`,
+      caseDisplayId(inv.id),
       inv.transaction_id,
       inv.investigation_status,
       inv.created_at || '',
@@ -150,8 +151,8 @@ export function printCaseFile(inv: Investigation, tx: SupabaseTransaction | null
   const ss = tx ? screenAccount(tx.sender_account) : null;
   const rs = tx ? screenAccount(tx.receiver_account) : null;
   const explanation = tx ? explainTransaction(tx) : null;
-  const caseId = `INV-${String(inv.id).padStart(4, '0')}`;
-  const sarRef = `SAR-${new Date().getFullYear()}-${String(inv.id).padStart(6, '0')}`;
+  const caseId = caseDisplayId(inv.id);
+  const sarRef = sarReferenceId(inv.id);
 
   const html = `<!doctype html>
 <html lang="en">

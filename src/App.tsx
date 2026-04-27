@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Download, RefreshCw, ExternalLink, Clock, RotateCcw, Radio, UserCircle2 } from 'lucide-react';
+import { Download, RefreshCw, ExternalLink, Clock, RotateCcw, Radio, UserCircle2, Activity } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TransactionList from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
@@ -26,6 +26,12 @@ import {
 } from './services/sessionStore';
 import { exportTransactionsCsv, exportInvestigationsCsv } from './services/exporters';
 import { useToast } from './components/Toast';
+import ActivityInsightsDrawer from './components/ActivityInsightsDrawer';
+import {
+  bootstrapSession,
+  recordEvent,
+  resetActivity,
+} from './services/userActivity';
 
 type Page = 'landing' | 'demo' | 'casestudy';
 
@@ -36,6 +42,7 @@ function App() {
   const [page, setPage] = useState<Page>('landing');
   const [activeTab, setActiveTab] = useState('alerts');
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const [inspectedAccount, setInspectedAccount] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
   const [investigations, setInvestigations] = useState<Investigation[]>([]);
@@ -76,13 +83,15 @@ function App() {
   const resetDemo = useCallback(async (silent: boolean = false) => {
     if (!silent) setResetting(true);
     try {
-      // Delete all investigations. Use neq('id', 0) (always true for bigint PK)
-      // to satisfy PostgREST's requirement of a filter on bulk delete; this
-      // avoids the "id=gt.0" 400 we were seeing.
+      // Delete all investigations. The id column is a UUID, so we cannot use
+      // a bigint comparison (`.gt('id', 0)` / `.neq('id', 0)`) — PostgREST
+      // returns 400 "invalid input syntax for type uuid". The universal,
+      // type-agnostic 'match every row' filter is `.not('id', 'is', null)`
+      // since every row has a non-null primary key.
       const { error: delErr } = await supabase
         .from('investigations')
         .delete()
-        .neq('id', 0);
+        .not('id', 'is', null);
       if (delErr && !silent) {
         toast.warning(
           'Could not clear investigations table',
@@ -99,16 +108,49 @@ function App() {
       clearAssignees();
       await fetchAll();
       if (!silent) {
-        toast.success('Demo reset', 'Investigations, audit log, notes and assignments cleared.');
+        // Don't wipe the user's identity — just log the reset and clear the
+        // current session's activity buffer so the panel reflects the new
+        // baseline, while preserving lifetime totals.
+        resetActivity(false);
+        recordEvent('demo_reset');
+        toast.success(
+          'Demo reset',
+          'Investigations, audit log, notes and assignments cleared. Your user identity was preserved.'
+        );
       }
     } finally {
       if (!silent) setTimeout(() => setResetting(false), 400);
     }
   }, [fetchAll, toast]);
 
-  // ─── First-time entry: hybrid fresh-start ─────────────────────────────────
+  // ─── First-time entry: hybrid fresh-start ─────────────────────────────
   useEffect(() => {
     if (page !== 'demo') return;
+
+    // Bootstrap user activity tracker once per browser session and surface a
+    // welcome toast appropriate to whether this is a first-visit, returning
+    // or power user.
+    const { state, isNewUser, isNewSession } = bootstrapSession();
+    if (isNewSession) {
+      if (isNewUser) {
+        toast.info(
+          'Welcome to ClearTrace',
+          'We\u2019ll remember you locally so we can show your activity history on return visits.'
+        );
+      } else if (state.sessionCount >= 5 || state.eventCount >= 100) {
+        toast.success(
+          `Welcome back — visit #${state.sessionCount}`,
+          `Power user with ${state.eventCount} lifetime events. Press ⌘K for the command palette.`
+        );
+      } else {
+        toast.success(
+          `Welcome back — visit #${state.sessionCount}`,
+          'Your activity history is intact. Open the Activity panel in the top bar to review.'
+        );
+      }
+    }
+    recordEvent('demo_entered', { session_number: state.sessionCount });
+
     const initialized = sessionStorage.getItem(SESSION_FRESH_KEY);
     if (!initialized) {
       sessionStorage.setItem(SESSION_FRESH_KEY, '1');
@@ -117,7 +159,7 @@ function App() {
     } else {
       fetchAll();
     }
-  }, [page, fetchAll, resetDemo]);
+  }, [page, fetchAll, resetDemo, toast]);
 
   // ─── Tick every 10s for relative timestamps ───────────────────────────────
   const tickRef = useRef<number | null>(null);
@@ -153,12 +195,28 @@ function App() {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
         e.preventDefault();
-        setPaletteOpen((v) => !v);
+        setPaletteOpen((v) => {
+          if (!v) recordEvent('command_palette_opened', { trigger: 'keyboard' });
+          return !v;
+        });
       }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [page]);
+
+  // ─── Activity-tracking wrappers ──────────────────────────────────────
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab((prev) => {
+      if (prev !== tab) recordEvent('tab_switched', { from: prev, to: tab });
+      return tab;
+    });
+  }, []);
+
+  const handleInspectAccount = useCallback((account: string) => {
+    setInspectedAccount(account);
+    recordEvent('account_inspected', { account });
+  }, []);
 
   // ─── Derived state ────────────────────────────────────────────────────────
   // IMPORTANT: All hooks must be declared before any early return so the hook
@@ -243,12 +301,15 @@ function App() {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           counts={{
             alerts: pendingReviewCount,
             investigations: totalInvestigatedCount,
           }}
-          onOpenCommandPalette={() => setPaletteOpen(true)}
+          onOpenCommandPalette={() => {
+            recordEvent('command_palette_opened', { trigger: 'sidebar' });
+            setPaletteOpen(true);
+          }}
         />
 
         <main className="flex-1 overflow-auto">
@@ -260,6 +321,19 @@ function App() {
             >
               ← Back to overview
             </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  recordEvent('activity_panel_opened');
+                  setActivityOpen(true);
+                }}
+                title="View your activity insights"
+                className="px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
+              >
+                <Activity className="w-3.5 h-3.5 text-indigo-600" />
+                Activity
+              </button>
+            </div>
             <div className="flex items-center gap-3 text-xs">
               <label className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
                 <UserCircle2 className="w-3.5 h-3.5 text-slate-400" />
@@ -275,6 +349,7 @@ function App() {
                     const v = e.target.value as AnalystName;
                     setAnalyst(v);
                     setCurrentAnalyst(v);
+                    recordEvent('analyst_switched', { analyst: v });
                   }}
                   className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                 >
@@ -336,9 +411,9 @@ function App() {
                         }`}
                       />
                     </span>
-                    <Radio className="w-3.5 h-3.5" />
-                    <span>{liveMode ? 'Live · 30s' : 'Go live'}</span>
-                  </button>
+                      <Radio className="w-3.5 h-3.5" />
+                      <span>{liveMode ? 'Live · 30s' : 'Go live'}</span>
+                    </button>
                   <button
                     onClick={() => {
                       if (
@@ -361,9 +436,11 @@ function App() {
                       try {
                         if (activeTab === 'investigations') {
                           exportInvestigationsCsv(investigations, transactions);
+                          recordEvent('export_cases', { count: investigations.length });
                           toast.success('Cases exported', `${investigations.length} case record(s) saved as CSV.`);
                         } else {
                           exportTransactionsCsv(filteredTransactions);
+                          recordEvent('export_alerts', { count: filteredTransactions.length });
                           toast.success(
                             'Alerts exported',
                             `${filteredTransactions.length} transaction(s) saved as CSV with risk profile.`
@@ -380,7 +457,10 @@ function App() {
                     <span>Export CSV</span>
                   </button>
                   <button
-                    onClick={fetchAll}
+                    onClick={() => {
+                      recordEvent('data_refreshed');
+                      fetchAll();
+                    }}
                     disabled={refreshing}
                     className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg flex items-center gap-2 transition-all primary-shadow font-semibold disabled:opacity-70"
                   >
@@ -458,7 +538,7 @@ function App() {
                     transactions={filteredTransactions}
                     investigations={investigations}
                     onInvestigated={fetchAll}
-                    onInspectAccount={setInspectedAccount}
+                    onInspectAccount={handleInspectAccount}
                   />
                 </div>
               </div>
@@ -469,7 +549,7 @@ function App() {
                 transactions={transactions}
                 investigations={investigations}
                 onChanged={fetchAll}
-                onInspectAccount={setInspectedAccount}
+                onInspectAccount={handleInspectAccount}
               />
             )}
 
@@ -494,30 +574,36 @@ function App() {
         onClose={() => setPaletteOpen(false)}
         onAction={(action: CommandAction) => {
           if (action.type === 'tab') {
-            setActiveTab(action.tab);
+            handleTabChange(action.tab);
           } else if (action.type === 'open_account') {
-            setInspectedAccount(action.account);
+            handleInspectAccount(action.account);
           } else if (action.type === 'focus_tx') {
-            setActiveTab('alerts');
+            handleTabChange('alerts');
             const tx = transactions.find((t) => t.id === action.txId);
             if (tx) setFocusedAccount(tx.sender_account);
+            recordEvent('transaction_focused', { txId: action.txId });
           } else if (action.type === 'open_case') {
-            setActiveTab('investigations');
+            handleTabChange('investigations');
           } else if (action.type === 'reset_demo') {
             if (window.confirm('Reset the demo? This will clear all investigations, audit log and assignments.')) {
               resetDemo();
             }
           } else if (action.type === 'toggle_live') {
             setLiveMode((v) => !v);
+            recordEvent('live_mode_toggled', { enabled: !liveMode });
             toast.info(liveMode ? 'Live mode disabled' : 'Live mode enabled', 'Auto-refreshing every 30 seconds.');
           } else if (action.type === 'export_alerts') {
             exportTransactionsCsv(filteredTransactions);
+            recordEvent('export_alerts', { count: filteredTransactions.length });
             toast.success('Alerts exported', `${filteredTransactions.length} transaction(s) saved as CSV.`);
           }
         }}
         transactions={transactions}
         investigations={investigations}
       />
+
+      {/* Activity insights drawer */}
+      <ActivityInsightsDrawer open={activityOpen} onClose={() => setActivityOpen(false)} />
 
       {/* Customer risk drawer */}
       <CustomerRiskDrawer

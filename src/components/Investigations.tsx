@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import type { SupabaseTransaction, Investigation, InvestigationStatus } from '../types';
+import { caseDisplayId } from '../types';
+import { recordEvent } from '../services/userActivity';
 import SarDraftModal from './SarDraftModal';
 import SanctionsPanel from './SanctionsPanel';
 import AuditTimeline from './AuditTimeline';
@@ -109,17 +111,17 @@ export default function Investigations({ transactions, investigations, onChanged
   const toast = useToast();
   const [filter, setFilter] = useState<InvestigationStatus | 'all'>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<'all' | 'mine' | 'unassigned'>('all');
-  const [savingId, setSavingId] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
   const [sarTarget, setSarTarget] = useState<Investigation | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
-  const [savedFlash, setSavedFlash] = useState<number | null>(null);
+  const [savedFlash, setSavedFlash] = useState<string | null>(null);
   const [assignees, setAssignees] = useState<Record<string, AnalystName>>({});
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [openTimelines, setOpenTimelines] = useState<Set<number>>(new Set());
-  const [openSanctions, setOpenSanctions] = useState<Set<number>>(new Set());
-  const [openExplain, setOpenExplain] = useState<Set<number>>(new Set());
-  const [openDocAi, setOpenDocAi] = useState<Set<number>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [openTimelines, setOpenTimelines] = useState<Set<string>>(new Set());
+  const [openSanctions, setOpenSanctions] = useState<Set<string>>(new Set());
+  const [openExplain, setOpenExplain] = useState<Set<string>>(new Set());
+  const [openDocAi, setOpenDocAi] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const me = getCurrentAnalyst();
@@ -199,9 +201,10 @@ export default function Investigations({ transactions, investigations, onChanged
       return;
     }
     toast.success(
-      `Case INV-${String(inv.id).padStart(4, '0')} → ${STATUS_META[status].label}`,
+      `Case ${caseDisplayId(inv.id)} → ${STATUS_META[status].label}`,
       'Audit event recorded.'
     );
+    recordEvent('case_status_changed', { case_id: caseDisplayId(inv.id), status });
     addAuditEvent(
       inv.id,
       'status_changed',
@@ -219,31 +222,34 @@ export default function Investigations({ transactions, investigations, onChanged
   async function confirmFileSar() {
     if (!sarTarget) return;
     addAuditEvent(sarTarget.id, 'sar_filed', 'SAR draft confirmed and filed.', me);
+    recordEvent('sar_filed', { case_id: caseDisplayId(sarTarget.id) });
     await updateStatus(sarTarget, 'sar_filed');
     setSarTarget(null);
   }
 
-  function setDraftNote(invId: number, value: string) {
+  function setDraftNote(invId: string, value: string) {
     setNotesDraft((prev) => ({ ...prev, [String(invId)]: value }));
   }
 
-  function commitNote(invId: number) {
+  function commitNote(invId: string) {
     const next = { ...notes, [String(invId)]: notesDraft[String(invId)] || '' };
     setNotes(next);
     saveNotes(next);
     addAuditEvent(invId, 'note_saved', 'Analyst note updated.', me);
+    recordEvent('case_note_saved', { case_id: caseDisplayId(invId) });
     setSavedFlash(invId);
     setTimeout(() => setSavedFlash((curr) => (curr === invId ? null : curr)), 1500);
   }
 
-  function changeAssignee(invId: number, analyst: AnalystName) {
+  function changeAssignee(invId: string, analyst: AnalystName) {
     persistAssignee(invId, analyst);
-    setAssignees((prev) => ({ ...prev, [String(invId)]: analyst }));
+    setAssignees((prev) => ({ ...prev, [invId]: analyst }));
     addAuditEvent(invId, 'assigned', `Case assigned to ${analyst}.`, me);
+    recordEvent('case_assigned', { case_id: caseDisplayId(invId), analyst });
   }
 
   // ─── Bulk selection ──────────────────────────────────────────────────────
-  function toggleSelect(invId: number) {
+  function toggleSelect(invId: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
@@ -291,7 +297,7 @@ export default function Investigations({ transactions, investigations, onChanged
     clearSelection();
   }
 
-  function toggleTimeline(invId: number) {
+  function toggleTimeline(invId: string) {
     setOpenTimelines((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
@@ -299,7 +305,7 @@ export default function Investigations({ transactions, investigations, onChanged
       return next;
     });
   }
-  function toggleSanctionsPanel(invId: number) {
+  function toggleSanctionsPanel(invId: string) {
     setOpenSanctions((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
@@ -307,7 +313,7 @@ export default function Investigations({ transactions, investigations, onChanged
       return next;
     });
   }
-  function toggleExplain(invId: number) {
+  function toggleExplain(invId: string) {
     setOpenExplain((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
@@ -315,7 +321,7 @@ export default function Investigations({ transactions, investigations, onChanged
       return next;
     });
   }
-  function toggleDocAi(invId: number) {
+  function toggleDocAi(invId: string) {
     setOpenDocAi((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
@@ -528,7 +534,7 @@ export default function Investigations({ transactions, investigations, onChanged
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-base font-bold text-slate-900">
-                        Case #INV-{String(inv.id).padStart(4, '0')}
+                        Case #{caseDisplayId(inv.id)}
                       </h3>
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${meta.classes}`}
@@ -603,7 +609,10 @@ export default function Investigations({ transactions, investigations, onChanged
                   )}
                   {tx && (
                     <button
-                      onClick={() => printCaseFile(inv, tx)}
+                      onClick={() => {
+                        printCaseFile(inv, tx);
+                        recordEvent('case_printed', { case_id: caseDisplayId(inv.id) });
+                      }}
                       title="Open printable case file (Save as PDF from print dialog)"
                       className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
                     >

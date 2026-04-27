@@ -5,6 +5,7 @@ import AiModal from './AiModal';
 import TypologyChips from './TypologyChips';
 import { classifyTransaction } from '../services/typology';
 import { useToast } from './Toast';
+import { recordEvent } from '../services/userActivity';
 import type { SupabaseTransaction, Investigation } from '../types';
 
 // Re-export for backwards compat with imports elsewhere
@@ -54,6 +55,12 @@ export default function TransactionList({
       const summary = await analyzeTransaction(tx);
       setModal({ transaction: tx, summary });
       onInvestigated();
+      recordEvent('transaction_investigated', {
+        tx_id: tx.id,
+        risk_score: tx.risk_score,
+        amount: tx.amount,
+        currency: tx.currency,
+      });
       toast.success(`Investigation opened for #${tx.id}`, 'Audit event logged. Review summary in the modal.');
     } catch (err: any) {
       toast.error('AI analysis failed', err?.message || 'See console for details.');

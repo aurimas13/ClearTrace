@@ -13,13 +13,14 @@ import {
   Globe2,
 } from 'lucide-react';
 import type { SupabaseTransaction, Investigation } from '../types';
+import { caseDisplayId } from '../types';
 import { getCustomerRiskProfile } from '../services/customerRisk';
 
 export type CommandAction =
   | { type: 'tab'; tab: 'alerts' | 'investigations' | 'compliance' | 'pipelines' }
   | { type: 'open_account'; account: string }
   | { type: 'focus_tx'; txId: number }
-  | { type: 'open_case'; investigationId: number }
+  | { type: 'open_case'; investigationId: string }
   | { type: 'reset_demo' }
   | { type: 'toggle_live' }
   | { type: 'export_alerts' };
@@ -151,7 +152,7 @@ export default function CommandPalette({
     // Recent cases
     const cases: CommandItem[] = investigations.slice(0, 30).map((inv) => ({
       id: `case-${inv.id}`,
-      label: `Case INV-${String(inv.id).padStart(4, '0')}`,
+      label: `Case ${caseDisplayId(inv.id)}`,
       hint: `Tx #${inv.transaction_id} · ${inv.investigation_status}`,
       category: 'Cases',
       Icon: Hash,

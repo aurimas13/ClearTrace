@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { X, FileWarning, Copy, Download, Check, Loader2 } from 'lucide-react';
 import type { SupabaseTransaction, Investigation } from '../types';
+import { caseDisplayId, sarReferenceId } from '../types';
 
 interface SarDraftModalProps {
   investigation: Investigation;
@@ -28,8 +29,8 @@ export default function SarDraftModal({
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const caseId = `INV-${String(investigation.id).padStart(4, '0')}`;
-  const sarRef = `SAR-${new Date().getFullYear()}-${String(investigation.id).padStart(6, '0')}`;
+  const caseId = caseDisplayId(investigation.id);
+  const sarRef = sarReferenceId(investigation.id);
 
   const suspiciousActivityTypes = useMemo(() => {
     const types: string[] = [];
