@@ -1,4 +1,4 @@
-import { AlertTriangle, FileSearch, Database, ExternalLink } from 'lucide-react';
+import { AlertTriangle, FileSearch, Database, ExternalLink, BarChart3, Command } from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -7,13 +7,16 @@ interface SidebarProps {
     alerts?: number;
     investigations?: number;
     pipelines?: number;
+    compliance?: number;
   };
+  onOpenCommandPalette?: () => void;
 }
 
-export default function Sidebar({ activeTab, onTabChange, counts }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, counts, onOpenCommandPalette }: SidebarProps) {
   const menuItems = [
     { id: 'alerts', label: 'Alerts', icon: AlertTriangle, count: counts?.alerts },
     { id: 'investigations', label: 'Investigations', icon: FileSearch, count: counts?.investigations },
+    { id: 'compliance', label: 'Compliance KPIs', icon: BarChart3, count: counts?.compliance },
     { id: 'pipelines', label: 'Data Pipelines', icon: Database, count: counts?.pipelines },
   ];
 
@@ -66,6 +69,21 @@ export default function Sidebar({ activeTab, onTabChange, counts }: SidebarProps
       </nav>
 
       <div className="p-4 border-t border-slate-200 space-y-3">
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition-colors"
+            title="Open command palette"
+          >
+            <span className="flex items-center gap-2 text-xs font-medium">
+              <Command className="w-3.5 h-3.5" />
+              Quick command
+            </span>
+            <kbd className="text-[10px] font-mono bg-slate-100 text-slate-500 border border-slate-200 rounded px-1.5 py-0.5">
+              ⌘K
+            </kbd>
+          </button>
+        )}
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
           <p className="text-xs text-slate-500 mb-1.5 font-medium">System Status</p>
           <div className="flex items-center gap-2">

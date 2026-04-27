@@ -14,12 +14,21 @@ import {
   UserCircle2,
   X,
   Shield,
+  Printer,
+  BrainCircuit,
+  FileScan,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import type { SupabaseTransaction, Investigation, InvestigationStatus } from '../types';
 import SarDraftModal from './SarDraftModal';
 import SanctionsPanel from './SanctionsPanel';
 import AuditTimeline from './AuditTimeline';
+import TypologyChips from './TypologyChips';
+import ExplainabilityPanel from './ExplainabilityPanel';
+import DocumentAiPanel from './DocumentAiPanel';
+import { classifyTransaction } from '../services/typology';
+import { printCaseFile } from '../services/exporters';
+import { useToast } from './Toast';
 import {
   ANALYSTS,
   type AnalystName,
@@ -34,6 +43,7 @@ interface InvestigationsProps {
   transactions: SupabaseTransaction[];
   investigations: Investigation[];
   onChanged: () => void;
+  onInspectAccount?: (account: string) => void;
 }
 
 const STATUS_META: Record<
@@ -95,7 +105,8 @@ function formatRelative(dateStr?: string) {
   return `${days}d ago`;
 }
 
-export default function Investigations({ transactions, investigations, onChanged }: InvestigationsProps) {
+export default function Investigations({ transactions, investigations, onChanged, onInspectAccount }: InvestigationsProps) {
+  const toast = useToast();
   const [filter, setFilter] = useState<InvestigationStatus | 'all'>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<'all' | 'mine' | 'unassigned'>('all');
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -107,6 +118,8 @@ export default function Investigations({ transactions, investigations, onChanged
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [openTimelines, setOpenTimelines] = useState<Set<number>>(new Set());
   const [openSanctions, setOpenSanctions] = useState<Set<number>>(new Set());
+  const [openExplain, setOpenExplain] = useState<Set<number>>(new Set());
+  const [openDocAi, setOpenDocAi] = useState<Set<number>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const me = getCurrentAnalyst();
@@ -182,9 +195,13 @@ export default function Investigations({ transactions, investigations, onChanged
       .eq('id', inv.id);
     setSavingId(null);
     if (error) {
-      alert('Failed to update status: ' + error.message);
+      toast.error('Failed to update status', error.message);
       return;
     }
+    toast.success(
+      `Case INV-${String(inv.id).padStart(4, '0')} → ${STATUS_META[status].label}`,
+      'Audit event recorded.'
+    );
     addAuditEvent(
       inv.id,
       'status_changed',
@@ -251,9 +268,13 @@ export default function Investigations({ transactions, investigations, onChanged
       .in('id', ids);
     setBulkBusy(false);
     if (error) {
-      alert('Bulk update failed: ' + error.message);
+      toast.error('Bulk update failed', error.message);
       return;
     }
+    toast.success(
+      `Bulk update applied to ${ids.length} case${ids.length === 1 ? '' : 's'}`,
+      `Status set to ${STATUS_META[status].label}.`
+    );
     for (const id of ids) {
       addAuditEvent(id, 'status_changed', `Bulk update: status set to ${STATUS_META[status].label}.`, me);
     }
@@ -280,6 +301,22 @@ export default function Investigations({ transactions, investigations, onChanged
   }
   function toggleSanctionsPanel(invId: number) {
     setOpenSanctions((prev) => {
+      const next = new Set(prev);
+      if (next.has(invId)) next.delete(invId);
+      else next.add(invId);
+      return next;
+    });
+  }
+  function toggleExplain(invId: number) {
+    setOpenExplain((prev) => {
+      const next = new Set(prev);
+      if (next.has(invId)) next.delete(invId);
+      else next.add(invId);
+      return next;
+    });
+  }
+  function toggleDocAi(invId: number) {
+    setOpenDocAi((prev) => {
       const next = new Set(prev);
       if (next.has(invId)) next.delete(invId);
       else next.add(invId);
@@ -406,6 +443,9 @@ export default function Investigations({ transactions, investigations, onChanged
             Escalate all
           </button>
           <select
+            id="bulk-assign"
+            name="bulk_assign"
+            aria-label="Bulk assign all selected cases"
             disabled={bulkBusy}
             onChange={(e) => {
               if (e.target.value) {
@@ -496,6 +536,7 @@ export default function Investigations({ transactions, investigations, onChanged
                         <StatusIcon className="w-3 h-3" />
                         {meta.label}
                       </span>
+                      {tx && <TypologyChips typologies={classifyTransaction(tx)} size="xs" />}
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5">
                       Transaction #{inv.transaction_id} · Opened {formatRelative(inv.created_at)}
@@ -503,6 +544,9 @@ export default function Investigations({ transactions, investigations, onChanged
                     <div className="flex items-center gap-2 mt-2">
                       <UserCircle2 className="w-4 h-4 text-slate-400" />
                       <select
+                        id={`assignee-${inv.id}`}
+                        name={`assignee_${inv.id}`}
+                        aria-label={`Assignee for case ${inv.id}`}
                         value={assignee}
                         onChange={(e) => changeAssignee(inv.id, e.target.value as AnalystName)}
                         className="text-xs font-semibold bg-white border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
@@ -557,6 +601,16 @@ export default function Investigations({ transactions, investigations, onChanged
                       Reopen
                     </button>
                   )}
+                  {tx && (
+                    <button
+                      onClick={() => printCaseFile(inv, tx)}
+                      title="Open printable case file (Save as PDF from print dialog)"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                      Print case file
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -575,8 +629,16 @@ export default function Investigations({ transactions, investigations, onChanged
                       })} ${tx.currency}`}
                       valueClass="text-slate-900 font-semibold"
                     />
-                    <DetailRow label="Sender" value={tx.sender_account} mono />
-                    <DetailRow label="Receiver" value={tx.receiver_account} mono />
+                    <ClickableAccountRow
+                      label="Sender"
+                      account={tx.sender_account}
+                      onInspect={onInspectAccount}
+                    />
+                    <ClickableAccountRow
+                      label="Receiver"
+                      account={tx.receiver_account}
+                      onInspect={onInspectAccount}
+                    />
                     <DetailRow
                       label="Date"
                       value={new Date(tx.transaction_date).toLocaleString('en-US', {
@@ -643,24 +705,40 @@ export default function Investigations({ transactions, investigations, onChanged
                 </div>
               )}
 
-              {/* Sanctions panel toggle */}
+              {/* Expandable analysis panels: Sanctions / Explainability / Document AI */}
               {tx && (
-                <div className="px-6 pb-3">
-                  <button
-                    onClick={() => toggleSanctionsPanel(inv.id)}
-                    className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5"
-                  >
-                    <Shield className="w-3.5 h-3.5 text-blue-700" />
-                    {sanctionsOpen ? 'Hide' : 'Show'} sanctions screening
-                  </button>
+                <div className="px-6 pb-3 space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    <PanelToggleButton
+                      open={sanctionsOpen}
+                      onClick={() => toggleSanctionsPanel(inv.id)}
+                      Icon={Shield}
+                      iconColor="text-blue-700"
+                      label="Sanctions screening"
+                    />
+                    <PanelToggleButton
+                      open={openExplain.has(inv.id)}
+                      onClick={() => toggleExplain(inv.id)}
+                      Icon={BrainCircuit}
+                      iconColor="text-indigo-700"
+                      label="Why was this flagged?"
+                    />
+                    <PanelToggleButton
+                      open={openDocAi.has(inv.id)}
+                      onClick={() => toggleDocAi(inv.id)}
+                      Icon={FileScan}
+                      iconColor="text-violet-700"
+                      label="Document AI"
+                    />
+                  </div>
                   {sanctionsOpen && (
-                    <div className="mt-3">
-                      <SanctionsPanel
-                        senderAccount={tx.sender_account}
-                        receiverAccount={tx.receiver_account}
-                      />
-                    </div>
+                    <SanctionsPanel
+                      senderAccount={tx.sender_account}
+                      receiverAccount={tx.receiver_account}
+                    />
                   )}
+                  {openExplain.has(inv.id) && <ExplainabilityPanel transaction={tx} />}
+                  {openDocAi.has(inv.id) && <DocumentAiPanel transaction={tx} />}
                 </div>
               )}
 
@@ -758,5 +836,60 @@ function DetailRow({
         {value}
       </span>
     </div>
+  );
+}
+
+function ClickableAccountRow({
+  label,
+  account,
+  onInspect,
+}: {
+  label: string;
+  account: string;
+  onInspect?: (account: string) => void;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <span className="text-xs text-slate-500 font-medium">{label}</span>
+      {onInspect ? (
+        <button
+          onClick={() => onInspect(account)}
+          className="text-xs font-mono text-blue-700 hover:text-blue-900 hover:underline text-right"
+          title="View customer risk profile"
+        >
+          {account}
+        </button>
+      ) : (
+        <span className="text-xs font-mono text-slate-700 text-right">{account}</span>
+      )}
+    </div>
+  );
+}
+
+function PanelToggleButton({
+  open,
+  onClick,
+  Icon,
+  iconColor,
+  label,
+}: {
+  open: boolean;
+  onClick: () => void;
+  Icon: typeof Shield;
+  iconColor: string;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-lg text-xs font-semibold border inline-flex items-center gap-1.5 transition-colors ${
+        open
+          ? 'bg-slate-900 text-white border-slate-900'
+          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+      }`}
+    >
+      <Icon className={`w-3.5 h-3.5 ${open ? 'text-white' : iconColor}`} />
+      {open ? 'Hide' : 'Show'} {label}
+    </button>
   );
 }

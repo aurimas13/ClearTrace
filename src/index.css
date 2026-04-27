@@ -64,3 +64,27 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Toast slide-in */
+@keyframes toast-in {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-toast-in {
+  animation: toast-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Sparkline + chart utilities */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* Geo-risk pulse */
+@keyframes geo-pulse {
+  0%   { r: 3;  opacity: 0.9; }
+  70%  { r: 12; opacity: 0;   }
+  100% { r: 12; opacity: 0;   }
+}
+.geo-pulse {
+  animation: geo-pulse 1.6s ease-out infinite;
+  transform-origin: center;
+}
+

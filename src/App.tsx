@@ -8,6 +8,9 @@ import LandingPage from './components/LandingPage';
 import CaseStudy from './components/CaseStudy';
 import Investigations from './components/Investigations';
 import DataPipelines from './components/DataPipelines';
+import Compliance from './components/Compliance';
+import CommandPalette, { type CommandAction } from './components/CommandPalette';
+import CustomerRiskDrawer from './components/CustomerRiskDrawer';
 import AlertsFilterBar, { DEFAULT_FILTERS } from './components/AlertsFilterBar';
 import type { AlertFilters } from './components/AlertsFilterBar';
 import { supabase } from './supabaseClient';
@@ -21,14 +24,19 @@ import {
   clearAuditLog,
   clearAssignees,
 } from './services/sessionStore';
+import { exportTransactionsCsv, exportInvestigationsCsv } from './services/exporters';
+import { useToast } from './components/Toast';
 
 type Page = 'landing' | 'demo' | 'casestudy';
 
 const SESSION_FRESH_KEY = 'cleartrace_session_initialized';
 
 function App() {
+  const toast = useToast();
   const [page, setPage] = useState<Page>('landing');
   const [activeTab, setActiveTab] = useState('alerts');
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [inspectedAccount, setInspectedAccount] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
   const [investigations, setInvestigations] = useState<Investigation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,8 +56,16 @@ function App() {
         supabase.from('transactions').select('*').order('transaction_date', { ascending: false }),
         supabase.from('investigations').select('*').order('created_at', { ascending: false }),
       ]);
-      if (!txRes.error && txRes.data) setTransactions(txRes.data);
-      if (!invRes.error && invRes.data) setInvestigations(invRes.data);
+      if (txRes.error) {
+        console.error('[fetchAll] transactions error:', txRes.error);
+      } else if (txRes.data) {
+        setTransactions(txRes.data);
+      }
+      if (invRes.error) {
+        console.error('[fetchAll] investigations error:', invRes.error);
+      } else if (invRes.data) {
+        setInvestigations(invRes.data);
+      }
       setLastRefreshed(new Date());
     } finally {
       setTimeout(() => setRefreshing(false), 400);
@@ -60,8 +76,19 @@ function App() {
   const resetDemo = useCallback(async (silent: boolean = false) => {
     if (!silent) setResetting(true);
     try {
-      // Delete all investigations (DB-side); fall back to gt(0) which matches every row
-      await supabase.from('investigations').delete().gt('id', 0);
+      // Delete all investigations. Use neq('id', 0) (always true for bigint PK)
+      // to satisfy PostgREST's requirement of a filter on bulk delete; this
+      // avoids the "id=gt.0" 400 we were seeing.
+      const { error: delErr } = await supabase
+        .from('investigations')
+        .delete()
+        .neq('id', 0);
+      if (delErr && !silent) {
+        toast.warning(
+          'Could not clear investigations table',
+          delErr.message || 'Database returned an error — local audit log was still cleared.'
+        );
+      }
       // Clear analyst notes, audit log, assignees (sessionStorage)
       try {
         sessionStorage.removeItem('cleartrace_analyst_notes');
@@ -71,10 +98,13 @@ function App() {
       clearAuditLog();
       clearAssignees();
       await fetchAll();
+      if (!silent) {
+        toast.success('Demo reset', 'Investigations, audit log, notes and assignments cleared.');
+      }
     } finally {
       if (!silent) setTimeout(() => setResetting(false), 400);
     }
-  }, [fetchAll]);
+  }, [fetchAll, toast]);
 
   // ─── First-time entry: hybrid fresh-start ─────────────────────────────────
   useEffect(() => {
@@ -116,6 +146,19 @@ function App() {
       if (liveTimerRef.current) window.clearInterval(liveTimerRef.current);
     };
   }, [page, liveMode, fetchAll]);
+
+  // ─── Cmd+K / Ctrl+K to open command palette ────────────────────────────
+  useEffect(() => {
+    if (page !== 'demo') return;
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [page]);
 
   // ─── Derived state ────────────────────────────────────────────────────────
   // IMPORTANT: All hooks must be declared before any early return so the hook
@@ -205,6 +248,7 @@ function App() {
             alerts: pendingReviewCount,
             investigations: totalInvestigatedCount,
           }}
+          onOpenCommandPalette={() => setPaletteOpen(true)}
         />
 
         <main className="flex-1 overflow-auto">
@@ -223,6 +267,9 @@ function App() {
                   Signed in as
                 </span>
                 <select
+                  id="cleartrace-current-analyst"
+                  name="current_analyst"
+                  aria-label="Current analyst"
                   value={analyst}
                   onChange={(e) => {
                     const v = e.target.value as AnalystName;
@@ -290,7 +337,7 @@ function App() {
                       />
                     </span>
                     <Radio className="w-3.5 h-3.5" />
-                    <span>{liveMode ? 'Live' : 'Live mode off'}</span>
+                    <span>{liveMode ? 'Live · 30s' : 'Go live'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -309,9 +356,28 @@ function App() {
                     <RotateCcw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} />
                     <span>{resetting ? 'Resetting…' : 'Reset Demo'}</span>
                   </button>
-                  <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
+                  <button
+                    onClick={() => {
+                      try {
+                        if (activeTab === 'investigations') {
+                          exportInvestigationsCsv(investigations, transactions);
+                          toast.success('Cases exported', `${investigations.length} case record(s) saved as CSV.`);
+                        } else {
+                          exportTransactionsCsv(filteredTransactions);
+                          toast.success(
+                            'Alerts exported',
+                            `${filteredTransactions.length} transaction(s) saved as CSV with risk profile.`
+                          );
+                        }
+                      } catch (err: any) {
+                        toast.error('Export failed', err?.message || 'Could not generate the file.');
+                      }
+                    }}
+                    title="Export current view as CSV"
+                    className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium"
+                  >
                     <Download className="w-4 h-4" />
-                    <span>Export</span>
+                    <span>Export CSV</span>
                   </button>
                   <button
                     onClick={fetchAll}
@@ -392,6 +458,7 @@ function App() {
                     transactions={filteredTransactions}
                     investigations={investigations}
                     onInvestigated={fetchAll}
+                    onInspectAccount={setInspectedAccount}
                   />
                 </div>
               </div>
@@ -402,7 +469,12 @@ function App() {
                 transactions={transactions}
                 investigations={investigations}
                 onChanged={fetchAll}
+                onInspectAccount={setInspectedAccount}
               />
+            )}
+
+            {activeTab === 'compliance' && (
+              <Compliance transactions={transactions} investigations={investigations} />
             )}
 
             {activeTab === 'pipelines' && (
@@ -415,6 +487,44 @@ function App() {
           </div>
         </main>
       </div>
+
+      {/* Command palette */}
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onAction={(action: CommandAction) => {
+          if (action.type === 'tab') {
+            setActiveTab(action.tab);
+          } else if (action.type === 'open_account') {
+            setInspectedAccount(action.account);
+          } else if (action.type === 'focus_tx') {
+            setActiveTab('alerts');
+            const tx = transactions.find((t) => t.id === action.txId);
+            if (tx) setFocusedAccount(tx.sender_account);
+          } else if (action.type === 'open_case') {
+            setActiveTab('investigations');
+          } else if (action.type === 'reset_demo') {
+            if (window.confirm('Reset the demo? This will clear all investigations, audit log and assignments.')) {
+              resetDemo();
+            }
+          } else if (action.type === 'toggle_live') {
+            setLiveMode((v) => !v);
+            toast.info(liveMode ? 'Live mode disabled' : 'Live mode enabled', 'Auto-refreshing every 30 seconds.');
+          } else if (action.type === 'export_alerts') {
+            exportTransactionsCsv(filteredTransactions);
+            toast.success('Alerts exported', `${filteredTransactions.length} transaction(s) saved as CSV.`);
+          }
+        }}
+        transactions={transactions}
+        investigations={investigations}
+      />
+
+      {/* Customer risk drawer */}
+      <CustomerRiskDrawer
+        account={inspectedAccount}
+        transactions={transactions}
+        onClose={() => setInspectedAccount(null)}
+      />
 
       {/* Dashboard footer */}
       <footer className="border-t border-slate-200 bg-white py-3 px-8">

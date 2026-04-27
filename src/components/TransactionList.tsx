@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react';
 import { AlertTriangle, Loader2, Brain, CheckCircle2 } from 'lucide-react';
 import { analyzeTransaction } from '../services/aiAnalysis';
 import AiModal from './AiModal';
+import TypologyChips from './TypologyChips';
+import { classifyTransaction } from '../services/typology';
+import { useToast } from './Toast';
 import type { SupabaseTransaction, Investigation } from '../types';
 
 // Re-export for backwards compat with imports elsewhere
@@ -11,6 +14,7 @@ interface TransactionListProps {
   transactions: SupabaseTransaction[];
   investigations: Investigation[];
   onInvestigated: () => void;
+  onInspectAccount?: (account: string) => void;
 }
 
 interface ModalState {
@@ -22,7 +26,9 @@ export default function TransactionList({
   transactions,
   investigations,
   onInvestigated,
+  onInspectAccount,
 }: TransactionListProps) {
+  const toast = useToast();
   const [analyzingId, setAnalyzingId] = useState<number | null>(null);
   const [modal, setModal] = useState<ModalState | null>(null);
 
@@ -48,8 +54,9 @@ export default function TransactionList({
       const summary = await analyzeTransaction(tx);
       setModal({ transaction: tx, summary });
       onInvestigated();
+      toast.success(`Investigation opened for #${tx.id}`, 'Audit event logged. Review summary in the modal.');
     } catch (err: any) {
-      alert('AI analysis failed: ' + err.message);
+      toast.error('AI analysis failed', err?.message || 'See console for details.');
     } finally {
       setAnalyzingId(null);
     }
@@ -122,11 +129,31 @@ export default function TransactionList({
                   <td className={`px-4 py-3 text-slate-700 capitalize border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.transaction_type}
                   </td>
-                  <td className={`px-4 py-3 font-mono text-slate-600 text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
-                    {tx.sender_account}
+                  <td className={`px-4 py-3 font-mono text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                    {onInspectAccount ? (
+                      <button
+                        onClick={() => onInspectAccount(tx.sender_account)}
+                        className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-left"
+                        title="View customer risk profile"
+                      >
+                        {tx.sender_account}
+                      </button>
+                    ) : (
+                      <span className="text-slate-600">{tx.sender_account}</span>
+                    )}
                   </td>
-                  <td className={`px-4 py-3 font-mono text-slate-600 text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
-                    {tx.receiver_account}
+                  <td className={`px-4 py-3 font-mono text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                    {onInspectAccount ? (
+                      <button
+                        onClick={() => onInspectAccount(tx.receiver_account)}
+                        className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-left"
+                        title="View customer risk profile"
+                      >
+                        {tx.receiver_account}
+                      </button>
+                    ) : (
+                      <span className="text-slate-600">{tx.receiver_account}</span>
+                    )}
                   </td>
                   <td className={`px-4 py-3 text-right font-semibold text-slate-900 border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -139,6 +166,9 @@ export default function TransactionList({
                   </td>
                   <td className={`px-4 py-3 text-center border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
                     <span className={`font-bold ${getRiskColor(tx.risk_score)}`}>{tx.risk_score}</span>
+                    <div className="mt-1 flex justify-center">
+                      <TypologyChips typologies={classifyTransaction(tx)} size="xs" />
+                    </div>
                   </td>
                   <td className={`px-4 py-3 text-center border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.is_flagged ? (
