@@ -18,6 +18,8 @@ import type { SupabaseTransaction } from './TransactionList';
 
 interface NetworkGraphProps {
   transactions: SupabaseTransaction[];
+  selectedAccount?: string | null;
+  onSelectAccount?: (account: string | null) => void;
 }
 
 interface AccountNodeData {
@@ -105,15 +107,54 @@ function buildGraph(transactions: SupabaseTransaction[]) {
   return { nodes, edges };
 }
 
-export default function NetworkGraph({ transactions }: NetworkGraphProps) {
+export default function NetworkGraph({ transactions, selectedAccount, onSelectAccount }: NetworkGraphProps) {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
+  // Compute the set of accounts directly connected to the selected account.
+  const neighborSet = useMemo(() => {
+    if (!selectedAccount) return null;
+    const set = new Set<string>([selectedAccount]);
+    for (const tx of transactions) {
+      if (tx.sender_account === selectedAccount) set.add(tx.receiver_account);
+      if (tx.receiver_account === selectedAccount) set.add(tx.sender_account);
+    }
+    return set;
+  }, [selectedAccount, transactions]);
+
   useEffect(() => {
     const { nodes: n, edges: e } = buildGraph(transactions);
-    setNodes(n);
-    setEdges(e);
-  }, [transactions]);
+    // Apply selection styling
+    const styledNodes = n.map((node) => {
+      if (!neighborSet) return node;
+      const inFocus = neighborSet.has(node.id);
+      return {
+        ...node,
+        style: {
+          ...(node.style || {}),
+          opacity: inFocus ? 1 : 0.18,
+        },
+      };
+    });
+    const styledEdges = e.map((edge) => {
+      if (!neighborSet) return edge;
+      const inFocus = neighborSet.has(edge.source as string) && neighborSet.has(edge.target as string);
+      const touchesSelected = edge.source === selectedAccount || edge.target === selectedAccount;
+      return {
+        ...edge,
+        style: {
+          ...(edge.style || {}),
+          opacity: inFocus && touchesSelected ? 1 : 0.1,
+          strokeWidth:
+            touchesSelected
+              ? Math.max(2.5, ((edge.style as any)?.strokeWidth || 1.5) + 1)
+              : (edge.style as any)?.strokeWidth || 1.5,
+        },
+      };
+    });
+    setNodes(styledNodes);
+    setEdges(styledEdges);
+  }, [transactions, neighborSet, selectedAccount]);
 
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -152,12 +193,27 @@ export default function NetworkGraph({ transactions }: NetworkGraphProps) {
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden card-shadow">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50 flex-wrap gap-3">
         <div>
           <h3 className="text-lg font-bold text-slate-900">Transaction Network</h3>
           <p className="text-xs text-slate-600 mt-0.5">
             {uniqueAccounts} accounts &middot; {transactions.length} transactions &middot;{' '}
             <span className="text-red-600 font-semibold">{highRiskNodes} high-risk nodes</span>
+            {selectedAccount && (
+              <>
+                {' '}&middot;{' '}
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono font-semibold">
+                  Focused: {selectedAccount}
+                  <button
+                    onClick={() => onSelectAccount?.(null)}
+                    className="ml-1 text-blue-700 hover:text-blue-900"
+                    title="Clear focus"
+                  >
+                    ×
+                  </button>
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs">
@@ -182,6 +238,11 @@ export default function NetworkGraph({ transactions }: NetworkGraphProps) {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onNodeClick={(_evt, node) => {
+            const next = node.id === selectedAccount ? null : node.id;
+            onSelectAccount?.(next);
+          }}
+          onPaneClick={() => onSelectAccount?.(null)}
           nodeTypes={nodeTypes}
           fitView
           fitViewOptions={{ padding: 0.3 }}

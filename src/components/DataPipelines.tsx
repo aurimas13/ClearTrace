@@ -59,12 +59,24 @@ export default function DataPipelines({ transactions, investigations, lastRefres
   const investigationsCount = investigations.length;
 
   // Build a realistic banking pipeline list. Numbers are anchored to the actual
-  // demo data so they feel real and update when the user refreshes.
+  // demo data and jittered slightly on every refresh so the dashboard feels
+  // alive (mirrors how Datadog / Grafana ingest health dashboards behave).
+  const refreshKey = lastRefreshed ? lastRefreshed.getTime() : 0;
   const pipelines: Pipeline[] = useMemo(() => {
     const corebanking = Math.round(totalToday * 0.62);
     const swift = Math.round(totalToday * 0.18);
     const cards = Math.round(totalToday * 0.20);
-    const ts = (mins: number) => new Date(Date.now() - mins * 60_000).toISOString();
+    // Re-anchor `lastSync` against the current refresh moment so
+    // "Synced Xs ago" actually moves when the user clicks Refresh.
+    const anchor = lastRefreshed ? lastRefreshed.getTime() : Date.now();
+    const ts = (secsBack: number) => new Date(anchor - secsBack * 1000).toISOString();
+    // Lightweight pseudo-random jitter (deterministic per refreshKey + seed)
+    const jitter = (seed: number, range: number) => {
+      const x = Math.sin(refreshKey * 0.000_001 + seed) * 10_000;
+      return (x - Math.floor(x)) * range - range / 2;
+    };
+    const j = (base: number, seed: number, pct: number) =>
+      Math.max(0, Math.round(base + jitter(seed, base * pct)));
 
     return [
       {
@@ -75,9 +87,9 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         icon: Banknote,
         status: 'healthy',
         recordsToday: corebanking,
-        recordsPerMin: 142,
-        latencyMs: 38,
-        lastSync: ts(0),
+        recordsPerMin: j(142, 1, 0.12),
+        latencyMs: j(38, 2, 0.25),
+        lastSync: ts(Math.max(2, Math.round(8 + jitter(3, 6)))),
         format: 'Avro',
       },
       {
@@ -88,9 +100,9 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         icon: Globe,
         status: 'healthy',
         recordsToday: swift,
-        recordsPerMin: 24,
-        latencyMs: 187,
-        lastSync: ts(1),
+        recordsPerMin: j(24, 4, 0.18),
+        latencyMs: j(187, 5, 0.20),
+        lastSync: ts(Math.max(5, Math.round(45 + jitter(6, 30)))),
         format: 'MT / ISO 20022',
       },
       {
@@ -101,9 +113,9 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         icon: CreditCard,
         status: 'degraded',
         recordsToday: cards,
-        recordsPerMin: 380,
-        latencyMs: 612,
-        lastSync: ts(2),
+        recordsPerMin: j(380, 7, 0.10),
+        latencyMs: j(612, 8, 0.15),
+        lastSync: ts(Math.max(10, Math.round(90 + jitter(9, 30)))),
         format: 'ISO 8583',
       },
       {
@@ -114,9 +126,9 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         icon: ShieldCheck,
         status: 'healthy',
         recordsToday: totalToday,
-        recordsPerMin: 142,
-        latencyMs: 54,
-        lastSync: ts(0),
+        recordsPerMin: j(142, 10, 0.12),
+        latencyMs: j(54, 11, 0.20),
+        lastSync: ts(Math.max(1, Math.round(4 + jitter(12, 4)))),
         format: 'JSON',
       },
       {
@@ -126,10 +138,10 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         description: 'Customer risk profiles, beneficial ownership and PEP status.',
         icon: UserCheck,
         status: 'healthy',
-        recordsToday: 182,
-        recordsPerMin: 6,
-        latencyMs: 92,
-        lastSync: ts(4),
+        recordsToday: j(182, 13, 0.05),
+        recordsPerMin: Math.max(1, j(6, 14, 0.30)),
+        latencyMs: j(92, 15, 0.18),
+        lastSync: ts(Math.max(60, Math.round(180 + jitter(16, 90)))),
         format: 'JSON',
       },
       {
@@ -141,12 +153,12 @@ export default function DataPipelines({ transactions, investigations, lastRefres
         status: 'healthy',
         recordsToday: investigationsCount,
         recordsPerMin: investigationsCount > 0 ? Math.max(1, Math.round(investigationsCount / 60)) : 0,
-        latencyMs: 24,
-        lastSync: ts(0),
+        latencyMs: j(24, 17, 0.30),
+        lastSync: ts(Math.max(1, Math.round(3 + jitter(18, 4)))),
         format: 'PostgREST',
       },
     ];
-  }, [totalToday, investigationsCount]);
+  }, [totalToday, investigationsCount, refreshKey, lastRefreshed]);
 
   const totals = useMemo(() => {
     const records = pipelines.reduce((sum, p) => sum + p.recordsToday, 0);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Brain,
   ShieldAlert,
@@ -8,9 +8,12 @@ import {
   Clock,
   Filter as FilterIcon,
   Loader2,
+  StickyNote,
+  Save,
 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import type { SupabaseTransaction, Investigation, InvestigationStatus } from '../types';
+import SarDraftModal from './SarDraftModal';
 
 interface InvestigationsProps {
   transactions: SupabaseTransaction[];
@@ -46,6 +49,24 @@ const STATUS_META: Record<
 
 const ALL_STATUSES: InvestigationStatus[] = ['open', 'escalated', 'sar_filed', 'cleared'];
 
+const NOTES_KEY = 'cleartrace_analyst_notes';
+
+function loadNotes(): Record<string, string> {
+  try {
+    return JSON.parse(sessionStorage.getItem(NOTES_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveNotes(notes: Record<string, string>) {
+  try {
+    sessionStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+  } catch {
+    // ignore
+  }
+}
+
 function formatRelative(dateStr?: string) {
   if (!dateStr) return '—';
   const d = new Date(dateStr);
@@ -62,8 +83,18 @@ function formatRelative(dateStr?: string) {
 export default function Investigations({ transactions, investigations, onChanged }: InvestigationsProps) {
   const [filter, setFilter] = useState<InvestigationStatus | 'all'>('all');
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [sarTarget, setSarTarget] = useState<Investigation | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+  const [savedFlash, setSavedFlash] = useState<number | null>(null);
 
-  // Latest investigation per transaction (in case there are re-investigations)
+  useEffect(() => {
+    const loaded = loadNotes();
+    setNotes(loaded);
+    setNotesDraft(loaded);
+  }, []);
+
+  // Latest investigation per transaction
   const latestPerTx = useMemo(() => {
     const map = new Map<number, Investigation>();
     for (const inv of investigations) {
@@ -119,6 +150,28 @@ export default function Investigations({ transactions, investigations, onChanged
     onChanged();
   }
 
+  function openSarModal(inv: Investigation) {
+    setSarTarget(inv);
+  }
+
+  async function confirmFileSar() {
+    if (!sarTarget) return;
+    await updateStatus(sarTarget, 'sar_filed');
+    setSarTarget(null);
+  }
+
+  function setDraftNote(invId: number, value: string) {
+    setNotesDraft((prev) => ({ ...prev, [String(invId)]: value }));
+  }
+
+  function commitNote(invId: number) {
+    const next = { ...notes, [String(invId)]: notesDraft[String(invId)] || '' };
+    setNotes(next);
+    saveNotes(next);
+    setSavedFlash(invId);
+    setTimeout(() => setSavedFlash((curr) => (curr === invId ? null : curr)), 1500);
+  }
+
   if (latestPerTx.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
@@ -133,6 +186,22 @@ export default function Investigations({ transactions, investigations, onChanged
       </div>
     );
   }
+
+  // Build "related transactions" for SAR modal context
+  const relatedFor = (inv: Investigation): SupabaseTransaction[] => {
+    const tx = txById.get(inv.transaction_id);
+    if (!tx) return [];
+    return transactions
+      .filter(
+        (t) =>
+          t.id !== tx.id &&
+          (t.sender_account === tx.sender_account ||
+            t.receiver_account === tx.receiver_account ||
+            t.sender_account === tx.receiver_account ||
+            t.receiver_account === tx.sender_account)
+      )
+      .slice(0, 8);
+  };
 
   return (
     <div className="space-y-6">
@@ -180,6 +249,10 @@ export default function Investigations({ transactions, investigations, onChanged
           const meta = STATUS_META[inv.investigation_status];
           const StatusIcon = meta.icon;
           const isSaving = savingId === inv.id;
+          const draft = notesDraft[String(inv.id)] ?? '';
+          const stored = notes[String(inv.id)] ?? '';
+          const noteDirty = draft !== stored;
+
           return (
             <div key={inv.id} className="bg-white rounded-2xl card-shadow overflow-hidden">
               {/* Header */}
@@ -207,18 +280,19 @@ export default function Investigations({ transactions, investigations, onChanged
                 </div>
 
                 {/* Disposition actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {isSaving && <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />}
                   {inv.investigation_status !== 'sar_filed' && (
                     <button
-                      onClick={() => updateStatus(inv, 'sar_filed')}
+                      onClick={() => openSarModal(inv)}
                       disabled={isSaving}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
+                      <FileWarning className="w-3.5 h-3.5" />
                       File SAR
                     </button>
                   )}
-                  {inv.investigation_status !== 'escalated' && inv.investigation_status === 'open' && (
+                  {inv.investigation_status === 'open' && (
                     <button
                       onClick={() => updateStatus(inv, 'escalated')}
                       disabled={isSaving}
@@ -253,9 +327,7 @@ export default function Investigations({ transactions, investigations, onChanged
                 <div className="px-6 py-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Transaction details */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Transaction
-                    </h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Transaction</h4>
                     <DetailRow label="Type" value={tx.transaction_type} />
                     <DetailRow
                       label="Amount"
@@ -281,9 +353,7 @@ export default function Investigations({ transactions, investigations, onChanged
 
                   {/* Risk indicators */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                      Risk Indicators
-                    </h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Risk Indicators</h4>
                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
                       <div className="flex items-baseline justify-between mb-2">
                         <span className="text-xs text-slate-500 font-medium">Risk Score</span>
@@ -334,10 +404,60 @@ export default function Investigations({ transactions, investigations, onChanged
                   Underlying transaction record not available.
                 </div>
               )}
+
+              {/* Analyst notes */}
+              <div className="px-6 pb-5">
+                <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 flex items-center gap-1.5">
+                      <StickyNote className="w-3.5 h-3.5 text-amber-600" />
+                      Analyst notes
+                    </label>
+                    <div className="flex items-center gap-2">
+                      {savedFlash === inv.id && (
+                        <span className="text-xs text-emerald-700 font-semibold inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Saved
+                        </span>
+                      )}
+                      <button
+                        onClick={() => commitNote(inv.id)}
+                        disabled={!noteDirty}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Save className="w-3 h-3" />
+                        Save note
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraftNote(inv.id, e.target.value)}
+                    placeholder="Document your findings, decisions and next steps for the audit trail…"
+                    rows={2}
+                    className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px]"
+                  />
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {/* SAR Modal */}
+      {sarTarget && (() => {
+        const tx = txById.get(sarTarget.transaction_id);
+        if (!tx) return null;
+        return (
+          <SarDraftModal
+            investigation={sarTarget}
+            transaction={tx}
+            relatedTransactions={relatedFor(sarTarget)}
+            onCancel={() => setSarTarget(null)}
+            onConfirm={confirmFileSar}
+          />
+        );
+      })()}
     </div>
   );
 }

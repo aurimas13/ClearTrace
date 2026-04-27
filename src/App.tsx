@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Filter, Download, RefreshCw, ExternalLink, Clock } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { Download, RefreshCw, ExternalLink, Clock, RotateCcw } from 'lucide-react';
 import Sidebar from './components/Sidebar';
 import TransactionList from './components/TransactionList';
 import NetworkGraph from './components/NetworkGraph';
@@ -8,11 +8,15 @@ import LandingPage from './components/LandingPage';
 import CaseStudy from './components/CaseStudy';
 import Investigations from './components/Investigations';
 import DataPipelines from './components/DataPipelines';
+import AlertsFilterBar, { DEFAULT_FILTERS } from './components/AlertsFilterBar';
+import type { AlertFilters } from './components/AlertsFilterBar';
 import { supabase } from './supabaseClient';
 import { AlertTriangle, FileCheck, TrendingUp } from 'lucide-react';
 import type { SupabaseTransaction, Investigation } from './types';
 
 type Page = 'landing' | 'demo' | 'casestudy';
+
+const SESSION_FRESH_KEY = 'cleartrace_session_initialized';
 
 function App() {
   const [page, setPage] = useState<Page>('landing');
@@ -20,9 +24,13 @@ function App() {
   const [transactions, setTransactions] = useState<SupabaseTransaction[]>([]);
   const [investigations, setInvestigations] = useState<Investigation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
-  const [, setTick] = useState(0); // forces re-render every 10s for relative timestamps
+  const [filters, setFilters] = useState<AlertFilters>(DEFAULT_FILTERS);
+  const [focusedAccount, setFocusedAccount] = useState<string | null>(null);
+  const [, setTick] = useState(0);
 
+  // ─── Data fetching ────────────────────────────────────────────────────────
   const fetchAll = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -34,16 +42,42 @@ function App() {
       if (!invRes.error && invRes.data) setInvestigations(invRes.data);
       setLastRefreshed(new Date());
     } finally {
-      // Keep the spin visible for at least 400ms so the refresh feels responsive
       setTimeout(() => setRefreshing(false), 400);
     }
   }, []);
 
-  useEffect(() => {
-    if (page === 'demo') fetchAll();
-  }, [page, fetchAll]);
+  // ─── Reset demo ───────────────────────────────────────────────────────────
+  const resetDemo = useCallback(async (silent: boolean = false) => {
+    if (!silent) setResetting(true);
+    try {
+      // Delete all investigations (DB-side); fall back to gt(0) which matches every row
+      await supabase.from('investigations').delete().gt('id', 0);
+      // Clear analyst notes (sessionStorage)
+      try {
+        sessionStorage.removeItem('cleartrace_analyst_notes');
+      } catch {
+        // ignore
+      }
+      await fetchAll();
+    } finally {
+      if (!silent) setTimeout(() => setResetting(false), 400);
+    }
+  }, [fetchAll]);
 
-  // Tick every 10s so "Last updated Xs ago" stays accurate
+  // ─── First-time entry: hybrid fresh-start ─────────────────────────────────
+  useEffect(() => {
+    if (page !== 'demo') return;
+    const initialized = sessionStorage.getItem(SESSION_FRESH_KEY);
+    if (!initialized) {
+      sessionStorage.setItem(SESSION_FRESH_KEY, '1');
+      // Clear once per browser session, then fetch
+      resetDemo(true);
+    } else {
+      fetchAll();
+    }
+  }, [page, fetchAll, resetDemo]);
+
+  // ─── Tick every 10s for relative timestamps ───────────────────────────────
   const tickRef = useRef<number | null>(null);
   useEffect(() => {
     if (page !== 'demo') return;
@@ -55,27 +89,64 @@ function App() {
 
   if (page === 'landing') {
     return (
-      <LandingPage
-        onEnterDemo={() => setPage('demo')}
-        onCaseStudy={() => setPage('casestudy')}
-      />
+      <LandingPage onEnterDemo={() => setPage('demo')} onCaseStudy={() => setPage('casestudy')} />
     );
   }
-
   if (page === 'casestudy') {
-    return (
-      <CaseStudy onBack={() => setPage('landing')} onEnterDemo={() => setPage('demo')} />
-    );
+    return <CaseStudy onBack={() => setPage('landing')} onEnterDemo={() => setPage('demo')} />;
   }
 
-  // ─── Dashboard derived metrics ────────────────────────────────────────────
-  const investigatedTxIds = new Set(investigations.map((i) => i.transaction_id));
-  const openInvestigations = investigations.filter((i) => i.investigation_status === 'open').length;
+  // ─── Derived state ────────────────────────────────────────────────────────
+  // Unique transactions that have at least one investigation record (deduplicated).
+  const investigatedTxIds = useMemo(() => {
+    const set = new Set<number>();
+    for (const inv of investigations) set.add(inv.transaction_id);
+    return set;
+  }, [investigations]);
+
+  const totalInvestigatedCount = investigatedTxIds.size;
+
   const highRiskCount = transactions.filter((t) => t.risk_score >= 80).length;
   const pendingReviewCount = transactions.filter((t) => t.is_flagged && !investigatedTxIds.has(t.id)).length;
   const avgRiskScore = transactions.length
     ? Math.round(transactions.reduce((sum, t) => sum + t.risk_score, 0) / transactions.length)
     : 0;
+
+  // Available transaction types for filter dropdown
+  const txTypes = useMemo(() => {
+    const set = new Set<string>();
+    for (const t of transactions) if (t.transaction_type) set.add(t.transaction_type);
+    return Array.from(set).sort();
+  }, [transactions]);
+
+  // ─── Filter pipeline ──────────────────────────────────────────────────────
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      // Account focus from network graph
+      if (focusedAccount && t.sender_account !== focusedAccount && t.receiver_account !== focusedAccount) {
+        return false;
+      }
+      // Risk
+      if (filters.risk === 'high' && t.risk_score < 80) return false;
+      if (filters.risk === 'medium' && (t.risk_score < 60 || t.risk_score >= 80)) return false;
+      if (filters.risk === 'low' && t.risk_score >= 60) return false;
+      // Status
+      const reviewed = investigatedTxIds.has(t.id);
+      if (filters.status === 'pending' && reviewed) return false;
+      if (filters.status === 'reviewed' && !reviewed) return false;
+      // Type
+      if (filters.type !== 'all' && t.transaction_type !== filters.type) return false;
+      // Flagged only
+      if (filters.flaggedOnly && !t.is_flagged) return false;
+      // Search
+      if (filters.search.trim()) {
+        const q = filters.search.trim().toLowerCase();
+        const hay = `${t.id} ${t.sender_account} ${t.receiver_account} ${t.transaction_type}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [transactions, filters, investigatedTxIds, focusedAccount]);
 
   const tabTitle =
     activeTab === 'alerts'
@@ -98,7 +169,7 @@ function App() {
           onTabChange={setActiveTab}
           counts={{
             alerts: pendingReviewCount,
-            investigations: openInvestigations,
+            investigations: totalInvestigatedCount,
           }}
         />
 
@@ -143,9 +214,22 @@ function App() {
                       Updated {formatRelative(lastRefreshed)}
                     </span>
                   )}
-                  <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
-                    <Filter className="w-4 h-4" />
-                    <span>Filter</span>
+                  <button
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          'Reset the demo? This will clear all investigations and analyst notes.'
+                        )
+                      ) {
+                        resetDemo();
+                      }
+                    }}
+                    disabled={resetting || refreshing}
+                    title="Clear all investigations and notes (demo only)"
+                    className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium disabled:opacity-60"
+                  >
+                    <RotateCcw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} />
+                    <span>{resetting ? 'Resetting…' : 'Reset Demo'}</span>
                   </button>
                   <button className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium">
                     <Download className="w-4 h-4" />
@@ -191,21 +275,43 @@ function App() {
               <div className="space-y-8">
                 <div>
                   <h3 className="text-xl font-semibold text-slate-900 mb-4">Network Analysis</h3>
-                  <NetworkGraph transactions={transactions} />
+                  <NetworkGraph
+                    transactions={transactions}
+                    selectedAccount={focusedAccount}
+                    onSelectAccount={setFocusedAccount}
+                  />
+                  {focusedAccount && (
+                    <p className="text-xs text-slate-500 mt-2 italic">
+                      Click anywhere on the canvas to clear the focused account.
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <h3 className="text-xl font-semibold text-slate-900">Flagged Transactions</h3>
                     <span className="text-sm text-slate-600">
-                      Showing {transactions.length} transactions ·{' '}
-                      <span className="text-emerald-700 font-medium">
-                        {investigations.length} reviewed
-                      </span>
+                      <span className="text-emerald-700 font-medium">{totalInvestigatedCount}</span> reviewed of{' '}
+                      {transactions.length} total
                     </span>
                   </div>
+
+                  <div className="mb-4">
+                    <AlertsFilterBar
+                      filters={filters}
+                      onChange={setFilters}
+                      onReset={() => {
+                        setFilters(DEFAULT_FILTERS);
+                        setFocusedAccount(null);
+                      }}
+                      txTypes={txTypes}
+                      resultCount={filteredTransactions.length}
+                      totalCount={transactions.length}
+                    />
+                  </div>
+
                   <TransactionList
-                    transactions={transactions}
+                    transactions={filteredTransactions}
                     investigations={investigations}
                     onInvestigated={fetchAll}
                   />

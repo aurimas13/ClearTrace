@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AlertTriangle, Loader2, Brain, CheckCircle2 } from 'lucide-react';
 import { analyzeTransaction } from '../services/aiAnalysis';
 import AiModal from './AiModal';
@@ -27,15 +27,20 @@ export default function TransactionList({
   const [modal, setModal] = useState<ModalState | null>(null);
 
   // Map of transaction_id -> latest investigation (for "Reviewed" badge)
-  const investigatedMap = new Map<number, Investigation>();
-  for (const inv of investigations) {
-    const existing = investigatedMap.get(inv.transaction_id);
-    if (!existing || (inv.created_at && existing.created_at && inv.created_at > existing.created_at)) {
-      investigatedMap.set(inv.transaction_id, inv);
-    } else if (!existing) {
-      investigatedMap.set(inv.transaction_id, inv);
+  const investigatedMap = useMemo(() => {
+    const m = new Map<number, Investigation>();
+    for (const inv of investigations) {
+      const existing = m.get(inv.transaction_id);
+      if (
+        !existing ||
+        (inv.created_at && existing.created_at && inv.created_at > existing.created_at) ||
+        (!existing.created_at && inv.created_at)
+      ) {
+        m.set(inv.transaction_id, inv);
+      }
     }
-  }
+    return m;
+  }, [investigations]);
 
   async function handleAnalyze(tx: SupabaseTransaction) {
     setAnalyzingId(tx.id);
@@ -70,7 +75,7 @@ export default function TransactionList({
   if (transactions.length === 0) {
     return (
       <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-        <p className="text-slate-600">No transactions found.</p>
+        <p className="text-slate-600">No transactions match the current filters.</p>
       </div>
     );
   }
