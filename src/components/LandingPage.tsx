@@ -143,7 +143,7 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
 
       {/* Hero */}
       <main className="relative flex-1 flex flex-col items-center justify-center px-6 pt-20">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-5xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-blue-200 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
             <span className="relative flex h-2 w-2">
@@ -154,10 +154,13 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
             AI-Powered AML Investigation Platform
           </div>
 
-          {/* Headline — both lines stay on one line at any zoom, identical size via clamp() */}
+          {/* Headline — both lines stay on one line at any zoom, identical size via clamp().
+              Upper bound chosen so the longer line ('Start Investigating Smarter.') fits inside
+              the max-w-5xl (1024px) hero container even at very wide viewports; padding kept to
+              avoid clipping the gradient-clipped tail of the second line. */}
           <h1
-            className="font-extrabold text-slate-900 leading-[1.08] mb-6 tracking-tight"
-            style={{ fontSize: 'clamp(1.75rem, 6.2vw, 5rem)' }}
+            className="font-extrabold text-slate-900 leading-[1.08] mb-6 tracking-tight px-2"
+            style={{ fontSize: 'clamp(1.5rem, 5.4vw, 4rem)' }}
           >
             <span className="block whitespace-nowrap">Stop Chasing False Positives.</span>
             <span className="block whitespace-nowrap text-gradient-brand">Start Investigating Smarter.</span>
