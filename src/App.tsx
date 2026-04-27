@@ -117,16 +117,10 @@ function App() {
     };
   }, [page, liveMode, fetchAll]);
 
-  if (page === 'landing') {
-    return (
-      <LandingPage onEnterDemo={() => setPage('demo')} onCaseStudy={() => setPage('casestudy')} />
-    );
-  }
-  if (page === 'casestudy') {
-    return <CaseStudy onBack={() => setPage('landing')} onEnterDemo={() => setPage('demo')} />;
-  }
-
   // ─── Derived state ────────────────────────────────────────────────────────
+  // IMPORTANT: All hooks must be declared before any early return so the hook
+  // call order stays identical across renders (React Rules of Hooks). The
+  // landing/casestudy early returns live AFTER this block.
   // Unique transactions that have at least one investigation record (deduplicated).
   const investigatedTxIds = useMemo(() => {
     const set = new Set<number>();
@@ -190,6 +184,16 @@ function App() {
       : activeTab === 'investigations'
       ? 'Review AI investigation summaries and set case dispositions'
       : 'Source-system ingestion health, throughput and audit trail';
+
+  // ─── Routing (post-hooks early returns) ──────────────────────────────────
+  if (page === 'landing') {
+    return (
+      <LandingPage onEnterDemo={() => setPage('demo')} onCaseStudy={() => setPage('casestudy')} />
+    );
+  }
+  if (page === 'casestudy') {
+    return <CaseStudy onBack={() => setPage('landing')} onEnterDemo={() => setPage('demo')} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#fafbff] flex flex-col">
