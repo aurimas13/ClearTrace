@@ -273,18 +273,33 @@ function App() {
     });
   }, [transactions, filters, investigatedTxIds, focusedAccount]);
 
-  const tabTitle =
-    activeTab === 'alerts'
-      ? 'Alert Dashboard'
-      : activeTab === 'investigations'
-      ? 'Active Investigations'
-      : 'Data Pipelines';
-  const tabSubtitle =
-    activeTab === 'alerts'
-      ? 'Real-time monitoring of suspicious financial activities'
-      : activeTab === 'investigations'
-      ? 'Review AI investigation summaries and set case dispositions'
-      : 'Source-system ingestion health, throughput and audit trail';
+  // Editorial section meta — each tab is a chapter of the dossier.
+  const tabMeta: Record<string, { section: string; title: string; subtitle: string }> = {
+    alerts: {
+      section: 'I',
+      title: 'The Wire Ledger',
+      subtitle: 'A live record of suspicious financial activity, scored as it arrives.',
+    },
+    investigations: {
+      section: 'II',
+      title: 'Active Cases',
+      subtitle: 'Open dispositions, with the full audit trail and AI counsel attached.',
+    },
+    compliance: {
+      section: 'III',
+      title: 'The Compliance Brief',
+      subtitle: 'KPIs, typology mix, and cross-border risk corridors at a glance.',
+    },
+    pipelines: {
+      section: 'IV',
+      title: 'Source Ingestion',
+      subtitle: 'Throughput, lag, and audit health for each upstream feed.',
+    },
+  };
+  const meta = tabMeta[activeTab] ?? tabMeta.alerts;
+  const tabTitle = meta.title;
+  const tabSubtitle = meta.subtitle;
+  const tabSection = meta.section;
 
   // ─── Routing (post-hooks early returns) ──────────────────────────────────
   if (page === 'landing') {
@@ -297,7 +312,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafbff] flex flex-col">
+    <div className="min-h-screen flex flex-col font-serif text-ink">
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           activeTab={activeTab}
@@ -312,14 +327,14 @@ function App() {
           }}
         />
 
-        <main className="flex-1 overflow-auto">
-          {/* Top bar with back links + analyst selector */}
-          <div className="border-b border-slate-200 bg-white px-8 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+        <main className="flex-1 overflow-auto bg-paper">
+          {/* Top bar — dossier metadata strip */}
+          <div className="border-b border-ink bg-paper px-8 py-2 flex items-center justify-between gap-3 flex-wrap font-mono text-[11px] uppercase tracking-[0.18em] text-ink-soft">
             <button
               onClick={() => setPage('landing')}
-              className="text-xs text-slate-500 hover:text-slate-900 transition-colors font-medium"
+              className="link-underline hover:text-ink transition-colors"
             >
-              ← Back to overview
+              ← Back to the masthead
             </button>
             <div className="flex items-center gap-2">
               <button
@@ -328,18 +343,16 @@ function App() {
                   setActivityOpen(true);
                 }}
                 title="View your activity insights"
-                className="px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors inline-flex items-center gap-1.5"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-ink bg-paper hover:bg-ink hover:text-paper transition-colors"
               >
-                <Activity className="w-3.5 h-3.5 text-indigo-600" />
+                <Activity className="w-3.5 h-3.5" />
                 Activity
               </button>
             </div>
-            <div className="flex items-center gap-3 text-xs">
-              <label className="inline-flex items-center gap-1.5 text-slate-600 font-medium">
-                <UserCircle2 className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-500">
-                  Signed in as
-                </span>
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-2">
+                <UserCircle2 className="w-3.5 h-3.5 text-ink-mute" />
+                <span className="text-ink-mute">By</span>
                 <select
                   id="cleartrace-current-analyst"
                   name="current_analyst"
@@ -351,7 +364,7 @@ function App() {
                     setCurrentAnalyst(v);
                     recordEvent('analyst_switched', { analyst: v });
                   }}
-                  className="px-2 py-1 bg-white border border-slate-200 rounded-md text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  className="font-serif normal-case tracking-normal italic text-[13px] px-1.5 py-0.5 bg-paper border border-rule-strong text-ink focus:outline-none focus:border-ink cursor-pointer"
                 >
                   {ANALYSTS.filter((a) => a !== 'Unassigned').map((a) => (
                     <option key={a} value={a}>
@@ -360,10 +373,10 @@ function App() {
                   ))}
                 </select>
               </label>
-              <span className="h-3 w-px bg-slate-200" />
+              <span className="text-vermillion">·</span>
               <button
                 onClick={() => setPage('casestudy')}
-                className="text-blue-700 hover:text-blue-900 font-semibold transition-colors flex items-center gap-1"
+                className="link-underline hover:text-ink transition-colors flex items-center gap-1"
               >
                 Case Study <ExternalLink className="w-3 h-3" />
               </button>
@@ -371,7 +384,7 @@ function App() {
                 href="https://aurimas.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1"
+                className="link-underline hover:text-ink transition-colors flex items-center gap-1"
               >
                 aurimas.io <ExternalLink className="w-3 h-3" />
               </a>
@@ -380,40 +393,51 @@ function App() {
 
           <div className="p-8">
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                <div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">{tabTitle}</h2>
-                  <p className="text-slate-600">{tabSubtitle}</p>
+              {/* Section header — editorial chapter mark */}
+              <div className="flex items-end justify-between mb-3 gap-4 flex-wrap">
+                <div className="min-w-0">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-vermillion mb-1">
+                    § {tabSection} · {activeTab === 'alerts' ? 'Lead' : activeTab === 'investigations' ? 'Continued' : activeTab === 'compliance' ? 'Brief' : 'Pressroom'}
+                  </p>
+                  <h2
+                    className="font-display font-semibold text-ink leading-[0.95] tracking-tight"
+                    style={{ fontSize: 'clamp(2rem, 3.6vw, 3rem)', fontVariationSettings: "'opsz' 144, 'SOFT' 30, 'WONK' 1" }}
+                  >
+                    {tabTitle}
+                  </h2>
+                  <p className="font-serif italic text-ink-soft mt-1 text-[15px] leading-snug max-w-[44rem]">
+                    {tabSubtitle}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   {lastRefreshed && (
-                    <span className="text-xs text-slate-500 flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5" />
-                      Updated {formatRelative(lastRefreshed)}
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-mute flex items-center gap-1.5 mr-1">
+                      <Clock className="w-3 h-3" />
+                      Filed {formatRelative(lastRefreshed)}
                     </span>
                   )}
                   <button
                     onClick={() => setLiveMode((v) => !v)}
                     title={liveMode ? 'Auto-refreshing every 30s — click to pause' : 'Enable live auto-refresh (30s)'}
-                    className={`px-3 py-2 rounded-lg border flex items-center gap-2 transition-all font-medium text-sm ${
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 border font-mono text-[11px] uppercase tracking-[0.18em] transition-colors ${
                       liveMode
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
+                        ? 'border-vermillion text-vermillion bg-paper'
+                        : 'border-ink text-ink-soft bg-paper hover:bg-ink hover:text-paper'
                     }`}
                   >
                     <span className="relative flex h-2 w-2">
                       {liveMode && (
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-70" />
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-vermillion opacity-70" />
                       )}
                       <span
                         className={`relative inline-flex rounded-full h-2 w-2 ${
-                          liveMode ? 'bg-emerald-500' : 'bg-slate-400'
+                          liveMode ? 'bg-vermillion' : 'bg-ink-mute'
                         }`}
                       />
                     </span>
-                      <Radio className="w-3.5 h-3.5" />
-                      <span>{liveMode ? 'Live · 30s' : 'Go live'}</span>
-                    </button>
+                    <Radio className="w-3 h-3" />
+                    <span>{liveMode ? 'Wire · 30s' : 'Open the wire'}</span>
+                  </button>
                   <button
                     onClick={() => {
                       if (
@@ -426,10 +450,10 @@ function App() {
                     }}
                     disabled={resetting || refreshing}
                     title="Clear all investigations, notes, audit log and assignments (demo only)"
-                    className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium disabled:opacity-60"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 border border-ink bg-paper hover:bg-ink hover:text-paper transition-colors font-mono text-[11px] uppercase tracking-[0.18em] disabled:opacity-60"
                   >
-                    <RotateCcw className={`w-4 h-4 ${resetting ? 'animate-spin' : ''}`} />
-                    <span>{resetting ? 'Resetting…' : 'Reset Demo'}</span>
+                    <RotateCcw className={`w-3.5 h-3.5 ${resetting ? 'animate-spin' : ''}`} />
+                    <span>{resetting ? 'Resetting…' : 'Reset'}</span>
                   </button>
                   <button
                     onClick={() => {
@@ -451,10 +475,10 @@ function App() {
                       }
                     }}
                     title="Export current view as CSV"
-                    className="px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 flex items-center gap-2 transition-all shadow-sm font-medium"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 border border-ink bg-paper hover:bg-ink hover:text-paper transition-colors font-mono text-[11px] uppercase tracking-[0.18em]"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Export CSV</span>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Export</span>
                   </button>
                   <button
                     onClick={() => {
@@ -462,13 +486,15 @@ function App() {
                       fetchAll();
                     }}
                     disabled={refreshing}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-lg flex items-center gap-2 transition-all primary-shadow font-semibold disabled:opacity-70"
+                    className="btn-ink inline-flex items-center gap-2 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] disabled:opacity-70"
                   >
-                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    <span>{refreshing ? 'Refreshing…' : 'Refresh'}</span>
+                    <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                    <span>{refreshing ? 'Pressing…' : 'Press the issue'}</span>
                   </button>
                 </div>
               </div>
+
+              <div className="double-rule mb-6" />
 
               <div className="grid grid-cols-3 gap-6 mb-8">
                 <StatCard
@@ -612,24 +638,28 @@ function App() {
         onClose={() => setInspectedAccount(null)}
       />
 
-      {/* Dashboard footer */}
-      <footer className="border-t border-slate-200 bg-white py-3 px-8">
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-500">
-            Built by <span className="text-slate-900 font-semibold">Aurimas Nausėdas</span>
+      {/* Demo colophon */}
+      <footer className="border-t border-ink bg-paper py-3 px-8">
+        <div className="flex items-center justify-between flex-wrap gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-soft">
+          <p>
+            Pressed by
+            <span className="font-serif normal-case tracking-normal italic text-ink ml-1.5">
+              Aurimas Nausėdas
+            </span>
           </p>
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setPage('casestudy')}
-              className="text-blue-700 hover:text-blue-900 font-semibold transition-colors flex items-center gap-1"
+              className="link-underline hover:text-ink transition-colors flex items-center gap-1"
             >
-              Case study <ExternalLink className="w-3 h-3" />
+              Case Study
+              <ExternalLink className="w-3 h-3" />
             </button>
             <a
               href="https://github.com/aurimas13/ClearTrace"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-600 hover:text-slate-900 transition-colors"
+              className="link-underline hover:text-ink transition-colors"
             >
               GitHub
             </a>
@@ -637,7 +667,7 @@ function App() {
               href="https://aurimas.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-600 hover:text-slate-900 transition-colors"
+              className="link-underline hover:text-ink transition-colors"
             >
               aurimas.io
             </a>

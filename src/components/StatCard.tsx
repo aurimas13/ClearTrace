@@ -8,25 +8,51 @@ interface StatCardProps {
   trend?: 'up' | 'down';
 }
 
+/**
+ * StatCard — Dossier reskin.
+ * Paper card with hard ink border + 4px hard-offset shadow (no blur),
+ * Fraunces display numerals, smallcaps title, vermillion change indicator.
+ */
 export default function StatCard({ title, value, change, icon: Icon, trend }: StatCardProps) {
   return (
-    <div className="group bg-white rounded-2xl p-6 card-shadow hover:card-shadow-lg hover:-translate-y-0.5 transition-all">
-      <div className="flex items-start justify-between mb-4">
-        <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-xl">
-          <Icon className="w-6 h-6 text-blue-700" />
+    <article className="group relative bg-paper border border-ink shadow-[4px_4px_0_0_var(--ink)] hover:shadow-[6px_6px_0_0_var(--ink)] hover:-translate-y-0.5 hover:-translate-x-0.5 transition-all p-5 font-serif">
+      {/* Top row — section marker + change pill */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Icon className="w-4 h-4 text-ink" strokeWidth={1.5} />
+          <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute">
+            {title}
+          </span>
         </div>
         {change && (
           <span
-            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-              trend === 'up' ? 'bg-red-50 text-red-700 border border-red-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+            className={`font-mono text-[10px] tracking-wider tabular-nums px-1.5 py-0.5 border ${
+              trend === 'up'
+                ? 'text-vermillion border-vermillion'
+                : 'text-ink border-ink'
             }`}
           >
-            {change}
+            {trend === 'up' ? '▲' : '▼'} {change.replace(/^[-+]/, '')}
           </span>
         )}
       </div>
-      <h3 className="text-slate-600 text-sm mb-1 font-medium">{title}</h3>
-      <p className="text-slate-900 text-3xl font-extrabold tracking-tight">{value}</p>
-    </div>
+
+      {/* Numeral — display Fraunces, oversized */}
+      <div
+        className="font-display text-ink leading-[0.9] tabular-nums"
+        style={{
+          fontSize: 'clamp(2.6rem, 4.6vw, 3.6rem)',
+          fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1",
+        }}
+      >
+        {value}
+      </div>
+
+      {/* Footer rule + scope line */}
+      <div className="hairline-thin mt-3 mb-2" />
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-mute">
+        Vs. prior 24h
+      </p>
+    </article>
   );
 }
