@@ -1,100 +1,120 @@
-import { useState } from 'react';
-import {
-  ArrowRight,
-  Shield,
-  Network,
-  Brain,
-  FileSearch,
-  ChevronRight,
-  ExternalLink,
-  X,
-  ArrowDownRight,
-  BarChart3,
-  Clock,
-  CheckCircle2,
-} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ArrowRight, X } from 'lucide-react';
 
 interface LandingPageProps {
   onEnterDemo: () => void;
   onCaseStudy: () => void;
 }
 
-function HowItWorksModal({ onClose }: { onClose: () => void }) {
+/* -------------------------------------------------------------------------- */
+/*  Editorial helpers                                                         */
+/* -------------------------------------------------------------------------- */
+
+/** Roman numerals for the colophon date (no library needed for one number). */
+function toRoman(n: number): string {
+  const map: [number, string][] = [
+    [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+    [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+    [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+  ];
+  let out = '';
+  for (const [v, s] of map) {
+    while (n >= v) { out += s; n -= v; }
+  }
+  return out;
+}
+
+/** Wraps text in a redaction bar that slides off after `delay`. */
+function Redacted({
+  children, delay = 0.2, className = '',
+}: { children: React.ReactNode; delay?: number; className?: string }) {
+  return (
+    <span
+      className={`redact ${className}`}
+      style={{ ['--redact-delay' as never]: `${delay}s` } as React.CSSProperties}
+    >
+      {children}
+    </span>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  The Method modal — replaces the old "How it works"                        */
+/* -------------------------------------------------------------------------- */
+
+function MethodModal({ onClose }: { onClose: () => void }) {
   const steps = [
     {
-      num: '01',
-      title: 'Transaction Ingestion',
-      desc: 'Real-time financial transaction data flows in from banking systems via Supabase (PostgreSQL). Each record includes sender, receiver, amount, currency, and timestamps.',
-      color: 'from-blue-500 to-cyan-500',
-      icon: ArrowDownRight,
+      num: 'I',
+      title: 'Ingestion',
+      desc: 'Wire-level transaction records arrive from core banking via Supabase. Each entry preserves sender, beneficiary, amount, currency, jurisdiction and timestamp — the raw evidence base.',
     },
     {
-      num: '02',
-      title: 'Automated Risk Scoring',
-      desc: 'Every transaction is scored 0–100 using rule-based heuristics: cross-border patterns, structuring indicators, velocity anomalies, and counterparty risk profiles.',
-      color: 'from-amber-500 to-orange-500',
-      icon: BarChart3,
+      num: 'II',
+      title: 'Triage',
+      desc: 'A deterministic scorer assigns 0–100 across cross-border patterns, structuring, velocity, and counterparty profile. The output is a defensible audit trail, not a black box.',
     },
     {
-      num: '03',
-      title: 'Network Visualization',
-      desc: 'React Flow renders an interactive graph of sender-receiver relationships. Multi-hop patterns, circular funding, and smurfing networks become immediately visible.',
-      color: 'from-purple-500 to-pink-500',
-      icon: Network,
+      num: 'III',
+      title: 'Mapping',
+      desc: 'React Flow renders the network of beneficial-owner relationships. Multi-hop layering, circular funding and smurfing become legible at a glance.',
     },
     {
-      num: '04',
-      title: 'AI Investigation (LLM)',
-      desc: 'Clicking "AI Analyze" sends transaction context to Claude, which returns a FinCrime analyst assessment citing specific AML typologies. Results are stored for audit.',
-      color: 'from-emerald-500 to-green-500',
-      icon: Brain,
+      num: 'IV',
+      title: 'Counsel',
+      desc: 'On request, Claude reviews a transaction with the analyst\u2019s framing and returns a written FinCrime assessment citing applicable AML typologies. The model never decides — it advises.',
     },
     {
-      num: '05',
-      title: 'SAR Draft Generation',
-      desc: 'The AI summary, risk score, and network context are compiled into a Suspicious Activity Report draft — ready for human review and regulatory submission.',
-      color: 'from-red-500 to-rose-500',
-      icon: FileSearch,
+      num: 'V',
+      title: 'Filing',
+      desc: 'The summary, scoring rationale, and network context are compiled into a SAR draft. A human reviews, edits, and submits. The system records who, when, and why.',
     },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-slate-200">
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/95 backdrop-blur border-b border-slate-200">
-          <h3 className="text-xl font-bold text-slate-900">How ClearTrace Works</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 font-serif">
+      <div className="absolute inset-0 bg-ink/80" onClick={onClose} />
+      <div className="relative w-full max-w-3xl bg-paper border border-ink shadow-[8px_8px_0_0_var(--ink)] max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 px-8 py-5 bg-paper border-b border-ink flex items-center justify-between">
+          <div>
+            <p className="font-mono text-[10px] tracking-[0.32em] text-ink-mute uppercase">Editorial · § II</p>
+            <h3 className="font-display text-3xl font-semibold text-ink leading-none mt-1" style={{ fontVariationSettings: "'SOFT' 30, 'WONK' 1" }}>
+              The Method
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="p-2 text-ink-soft hover:text-vermillion transition-colors"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="px-6 py-6 space-y-6">
-          {steps.map((step, i) => {
-            const Icon = step.icon;
-            return (
-              <div key={i} className="flex gap-4">
-                <div className="shrink-0">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-md`}>
-                    <Icon className="w-6 h-6 text-white" />
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div className="w-px h-6 bg-slate-200 mx-auto mt-2" />
-                  )}
+
+        <div className="px-8 py-8">
+          <p className="font-serif text-lg leading-[1.7] text-ink-soft mb-8 italic">
+            A five-act procedure, derived from how a senior FinCrime analyst actually reads a case file.
+            Each step leaves an artefact; the artefacts together constitute the SAR.
+          </p>
+
+          <ol className="space-y-7">
+            {steps.map((s, i) => (
+              <li key={i} className="grid grid-cols-[3rem_1fr] gap-5 pb-7 border-b border-rule last:border-b-0 last:pb-0">
+                <div className="font-display text-vermillion text-3xl leading-none pt-1" style={{ fontVariationSettings: "'SOFT' 0" }}>
+                  {s.num}
                 </div>
-                <div className="pt-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono text-slate-400">{step.num}</span>
-                    <h4 className="text-slate-900 font-semibold">{step.title}</h4>
-                  </div>
-                  <p className="text-sm text-slate-600 leading-relaxed">{step.desc}</p>
+                <div>
+                  <h4 className="font-display text-xl font-semibold text-ink mb-1.5">{s.title}</h4>
+                  <p className="font-serif text-[15px] leading-[1.65] text-ink-soft">{s.desc}</p>
                 </div>
-              </div>
-            );
-          })}
+              </li>
+            ))}
+          </ol>
         </div>
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50">
-          <p className="text-xs text-slate-500 text-center">
-            Human-in-the-loop at every decision point. The AI assists — it never autonomously files reports.
+
+        <div className="px-8 py-4 border-t border-ink bg-paper-deep">
+          <p className="font-mono text-[11px] text-ink-mute tracking-wider">
+            <span className="text-vermillion">¶</span>&nbsp; Human-in-the-loop at every disposition. The model assists; it does not file.
           </p>
         </div>
       </div>
@@ -102,234 +122,401 @@ function HowItWorksModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Landing page                                                              */
+/* -------------------------------------------------------------------------- */
+
 export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPageProps) {
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [showMethod, setShowMethod] = useState(false);
 
-  const metrics = [
-    { value: '50%', label: 'Reduction in manual review time', icon: Clock },
-    { value: '3→1', label: 'Hours to generate SAR drafts', icon: FileSearch },
-    { value: '67%', label: 'Faster investigation cycle', icon: CheckCircle2 },
+  // Date stamp, refreshed on mount — gives the masthead its "today's edition" feel.
+  const [today] = useState(() => new Date());
+  const dateLine = today.toLocaleDateString('en-GB', {
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
+  }).toUpperCase();
+
+  // Edition number derived from epoch-day so it changes daily but is stable per-day.
+  const edition = String(
+    Math.floor(today.getTime() / 86400000) % 9999
+  ).padStart(4, '0');
+
+  // Lock body scroll when modal is open.
+  useEffect(() => {
+    document.body.style.overflow = showMethod ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showMethod]);
+
+  /* ---- Content ---- */
+
+  const stats = [
+    { value: '60%', kicker: 'of an analyst\u2019s week', detail: 'is currently consumed by manual transaction review and SAR preparation, before any judgement is exercised.' },
+    { value: '3 \u2192 1', kicker: 'hours per draft',     detail: 'compressed by structured AI counsel, leaving the analyst to do what they\u2019re paid for: decide.' },
+    { value: '67%',   kicker: 'faster cycle',         detail: 'from alert to disposition, measured against the prior generation of rules-only systems.' },
   ];
 
-  const techStack = [
-    'React', 'TypeScript', 'Tailwind CSS', 'React Flow', 'Supabase', 'Claude AI', 'Vercel',
+  const credits = [
+    'TypeScript', 'React', 'Tailwind', 'React Flow', 'Supabase', 'PostgreSQL', 'Claude · Anthropic', 'Vercel',
   ];
+
+  /* ---- Render ---- */
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
-      {/* Background layers */}
-      <div className="absolute inset-0 grid-pattern pointer-events-none opacity-60" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-blue-200/40 via-indigo-100/30 to-transparent blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 right-0 w-[500px] h-[500px] bg-teal-200/30 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Header */}
-      <header className="relative border-b border-slate-200 bg-white/80 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 via-indigo-600 to-teal-500 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/30">
-              <Shield className="w-5 h-5 text-white" />
+    <div className="relative min-h-screen text-ink font-serif">
+      {/* ============================================================ */}
+      {/*  MASTHEAD                                                     */}
+      {/* ============================================================ */}
+      <header className="relative z-10 px-6 pt-8 pb-4">
+        <div className="max-w-[78rem] mx-auto">
+          {/* Top metadata row */}
+          <div className="flex items-end justify-between text-[11px] font-mono uppercase tracking-[0.18em] text-ink-mute mb-4">
+            <div className="hidden sm:block">
+              Vol. <span className="text-ink">I</span> &nbsp;·&nbsp; No. <span className="text-ink">{edition}</span>
             </div>
-            <span className="text-slate-900 font-bold text-lg tracking-tight">ClearTrace Intelligence</span>
+            <div className="text-center flex-1 sm:flex-none">{dateLine}</div>
+            <a
+              href="https://aurimas.io"
+              className="hidden sm:inline link-underline hover:text-ink"
+            >
+              ← aurimas.io
+            </a>
           </div>
-          <a
-            href="https://aurimas.io"
-            className="text-sm text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5"
+
+          <div className="hairline mb-3" />
+
+          {/* The nameplate */}
+          <h1
+            className="font-display font-semibold text-ink leading-[0.85] tracking-masthead text-center"
+            style={{
+              fontSize: 'clamp(3.2rem, 13vw, 11rem)',
+              fontVariationSettings: "'opsz' 144, 'SOFT' 30, 'WONK' 1",
+            }}
           >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Back to aurimas.io
-          </a>
+            ClearTrace
+          </h1>
+
+          {/* Deck below nameplate */}
+          <div className="flex items-center justify-center gap-4 mt-2 text-[10px] font-mono uppercase tracking-deck text-ink-soft">
+            <span>An&nbsp;Anti-Money-Laundering&nbsp;Dossier</span>
+            <span className="hidden sm:inline text-vermillion">●</span>
+            <span className="hidden sm:inline">For&nbsp;the&nbsp;Tired&nbsp;Analyst</span>
+          </div>
+
+          <div className="double-rule mt-3" />
         </div>
       </header>
 
-      {/* Hero */}
-      <main className="relative flex-1 flex flex-col items-center justify-center px-6 pt-20">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-blue-200 text-blue-700 text-xs font-semibold mb-8 shadow-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-500 opacity-60" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500" />
-            </span>
-            <Shield className="w-3.5 h-3.5" />
-            AI-Powered AML Investigation Platform
-          </div>
+      {/* ============================================================ */}
+      {/*  LEAD ARTICLE                                                 */}
+      {/* ============================================================ */}
+      <main className="relative z-10 px-6">
+        <article className="max-w-[78rem] mx-auto pt-10 pb-20">
 
-          {/* Headline — both lines stay on one line at any zoom, identical size via clamp().
-              Upper bound chosen so the longer line ('Start Investigating Smarter.') fits inside
-              the max-w-5xl (1024px) hero container even at very wide viewports; padding kept to
-              avoid clipping the gradient-clipped tail of the second line. */}
-          <h1
-            className="font-extrabold text-slate-900 leading-[1.08] mb-6 tracking-tight px-2"
-            style={{ fontSize: 'clamp(1.5rem, 5.4vw, 4rem)' }}
-          >
-            <span className="block whitespace-nowrap">Stop Chasing False Positives.</span>
-            <span className="block whitespace-nowrap text-gradient-brand">Start Investigating Smarter.</span>
-          </h1>
-
-          {/* Problem statement */}
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-10 leading-relaxed">
-            Fraud analysts spend <span className="text-slate-900 font-semibold">over 60% of their time</span> on manual transaction review and SAR preparation.
-            ClearTrace streamlines threat investigation by using LLM-orchestrated tools to highlight real risks, map financial flows, and draft reports - empowering analysts to focus on decision-making while maintaining human oversight.
+          {/* Kicker */}
+          <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-vermillion text-center mb-6">
+            <span className="border-y border-vermillion py-0.5">Lead&nbsp;Investigation&nbsp;·&nbsp;§ I</span>
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+          {/* Headline — display-serif, redacted reveal on load.
+              Two lines, but no whitespace-nowrap clipping problems this time
+              because the type is line-broken intentionally and Fraunces is
+              optically balanced at large sizes. */}
+          <h2
+            className="font-display font-semibold text-ink leading-[0.96] tracking-tight text-center mx-auto"
+            style={{
+              fontSize: 'clamp(2.4rem, 7.4vw, 6rem)',
+              maxWidth: '20ch',
+              fontVariationSettings: "'opsz' 144, 'SOFT' 30, 'WONK' 1",
+            }}
+          >
+            <span className="block">
+              Stop chasing&nbsp;
+              <em className="not-italic text-vermillion" style={{ fontStyle: 'italic', fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>
+                false&nbsp;positives.
+              </em>
+            </span>
+            <span className="block mt-2">
+              Start <Redacted delay={0.55}>investigating</Redacted>{' '}
+              <Redacted delay={0.85}>like&nbsp;a&nbsp;human.</Redacted>
+            </span>
+          </h2>
+
+          {/* Byline */}
+          <p className="text-center mt-8 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mute">
+            By <span className="text-ink link-underline">Aurimas&nbsp;Nausėdas</span>
+            <span className="mx-3 text-vermillion">§</span>
+            Filed from&nbsp;Vilnius
+          </p>
+
+          {/* Hairline before lede */}
+          <div className="hairline-thin max-w-[8rem] mx-auto mt-8 mb-10" />
+
+          {/* Lede — drop-cap paragraph + sidebar of stats */}
+          <div className="grid lg:grid-cols-[1fr_22rem] gap-12 lg:gap-16 items-start">
+
+            {/* The lede */}
+            <div className="max-w-[44rem]">
+              <p className="dropcap font-serif text-[1.22rem] leading-[1.75] text-ink-soft">
+                Fraud analysts spend the majority of their working week reviewing transactions
+                that look like crimes but aren’t — and the minority of it on the ones that are.
+                <span className="text-ink"> ClearTrace inverts that ratio.</span> A small,
+                opinionated stack of LLM-orchestrated tools triages alerts, draws the network
+                between counterparties, scores the evidence, and drafts the regulatory filing.
+                The analyst keeps the only thing a regulator cares about — judgement.
+              </p>
+
+              <p className="font-serif text-[1.06rem] leading-[1.75] text-ink-soft mt-6">
+                What follows is a working demo, pre-loaded with a plausible cross-border
+                AML scenario. Click anything. Open a transaction; chase the network; ask the
+                model what it sees. The disposition stays yours.
+              </p>
+
+              {/* CTA buttons — editorial */}
+              <div className="flex flex-wrap gap-4 mt-10">
+                <button
+                  onClick={onEnterDemo}
+                  className="btn-ink group inline-flex items-center gap-3 px-7 py-3.5 font-mono text-sm uppercase tracking-[0.18em]"
+                >
+                  <span>Enter the dossier</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={() => setShowMethod(true)}
+                  className="btn-paper inline-flex items-center gap-3 px-7 py-3.5 font-mono text-sm uppercase tracking-[0.18em]"
+                >
+                  <span>Read the method</span>
+                  <span className="text-lg leading-none -mt-0.5">§</span>
+                </button>
+              </div>
+
+              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mute mt-5">
+                Pre-loaded with sample AML case data — no setup required.
+              </p>
+            </div>
+
+            {/* Sidebar — "By the Numbers" */}
+            <aside className="lg:border-l lg:border-rule-strong lg:pl-10 relative">
+              <div className="hidden lg:block absolute -left-[1px] top-0 w-1 h-12 bg-vermillion" />
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-vermillion mb-6">
+                By the Numbers
+              </p>
+              <ul className="space-y-7">
+                {stats.map((s, i) => (
+                  <li
+                    key={i}
+                    className="fade-rise"
+                    style={{ ['--fade-delay' as never]: `${0.3 + i * 0.12}s` } as React.CSSProperties}
+                  >
+                    <div
+                      className="font-display text-ink leading-none mb-2"
+                      style={{
+                        fontSize: 'clamp(2.6rem, 4.4vw, 3.6rem)',
+                        fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1",
+                      }}
+                    >
+                      {s.value}
+                    </div>
+                    <p className="smallcaps text-[11px] text-ink mb-1.5">{s.kicker}</p>
+                    <p className="font-serif text-[14px] leading-[1.55] text-ink-soft italic">
+                      {s.detail}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          </div>
+
+          {/* ======================================================== */}
+          {/*  EXHIBIT A — The Evidence Preview                         */}
+          {/* ======================================================== */}
+          <section className="mt-24">
+            <div className="flex items-end justify-between gap-6 mb-3">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-vermillion mb-1">
+                  Exhibit&nbsp;A
+                </p>
+                <h3
+                  className="font-display font-semibold text-ink leading-none"
+                  style={{ fontSize: 'clamp(2rem, 4.4vw, 3rem)', fontVariationSettings: "'opsz' 144, 'SOFT' 30, 'WONK' 1" }}
+                >
+                  The dossier, abridged.
+                </h3>
+              </div>
+              <p className="hidden md:block font-serif italic text-ink-soft text-right max-w-[26rem] leading-[1.55]">
+                A live cross-section of the demo: alert posture, the network of beneficiaries,
+                and three flagged wires from this morning’s feed.
+              </p>
+            </div>
+
+            <div className="hairline-thin mb-6" />
+
+            {/* The "evidence" card */}
             <button
               onClick={onEnterDemo}
-              className="group relative px-8 py-4 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl font-semibold text-lg flex items-center gap-3 transition-all primary-shadow hover:-translate-y-0.5"
+              className="group relative block w-full text-left bg-paper-deep border border-ink shadow-[10px_10px_0_0_var(--ink)] hover:shadow-[14px_14px_0_0_var(--ink)] transition-all hover:-translate-y-0.5 hover:-translate-x-0.5"
+              aria-label="Enter live demo"
             >
-              <span className="relative">Enter Live Demo</span>
-              <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button
-              onClick={() => setShowHowItWorks(true)}
-              className="px-8 py-4 bg-white hover:bg-slate-50 text-slate-900 rounded-xl font-semibold text-lg flex items-center gap-3 transition-all border border-slate-300 shadow-sm"
-            >
-              How It Works
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-          <p className="text-sm text-slate-500 mb-16">
-            Pre-loaded with sample AML case data — no setup required
-          </p>
+              {/* Confidential stamp */}
+              <div className="stamp absolute -top-4 right-6 sm:right-10 z-20 text-[11px]">
+                Live Demo · Unclassified
+              </div>
 
-          {/* Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-            {metrics.map((m, i) => {
-              const Icon = m.icon;
-              return (
-                <div key={i} className="group bg-white rounded-2xl p-6 text-center card-shadow hover:card-shadow-lg hover:-translate-y-1 transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center mx-auto mb-3">
-                    <Icon className="w-5 h-5 text-blue-700" />
+              {/* File-tab header */}
+              <div className="flex items-center justify-between px-5 py-2.5 border-b border-ink bg-paper">
+                <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-soft">
+                  <span className="text-vermillion">▶</span>
+                  Case&nbsp;File&nbsp;<span className="text-ink">CT-{edition}-A</span>
+                </div>
+                <div className="font-mono text-[10px] tracking-[0.18em] text-ink-mute">
+                  cleartrace.aurimas.io
+                </div>
+              </div>
+
+              <div className="p-6 sm:p-8 grid lg:grid-cols-[1fr_1.2fr] gap-8">
+                {/* Left column: KPI tiles, type-only */}
+                <div className="space-y-5">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute">High-risk alerts</p>
+                    <div className="flex items-baseline gap-3 mt-1">
+                      <span className="font-display text-[4.2rem] leading-none text-vermillion" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 50, 'WONK' 1" }}>13</span>
+                      <span className="font-serif italic text-ink-soft text-sm">of 147 today</span>
+                    </div>
+                    <div className="hairline-thin mt-3" />
                   </div>
-                  <div className="text-4xl font-extrabold text-gradient-brand mb-1">{m.value}</div>
-                  <div className="text-sm text-slate-600">{m.label}</div>
-                </div>
-              );
-            })}
-          </div>
 
-          {/* Dashboard preview — clickable to enter demo */}
-          <div
-            onClick={onEnterDemo}
-            className="group relative rounded-2xl overflow-hidden card-shadow-lg hover:-translate-y-1 transition-all mb-16 cursor-pointer bg-white"
-          >
-            {/* Hover overlay */}
-            <div className="absolute inset-0 z-10 bg-slate-900/0 group-hover:bg-slate-900/30 transition-all duration-300 flex items-center justify-center pointer-events-none">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-6 py-3 bg-blue-700 rounded-xl text-white font-semibold shadow-xl">
-                <ArrowRight className="w-5 h-5" />
-                Enter Live Demo
-              </div>
-            </div>
-            <div className="absolute top-4 right-4 z-10 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-[10px] text-slate-600 uppercase tracking-wider font-semibold">
-              Preview
-            </div>
-            <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-              </div>
-              <span className="text-xs text-slate-500 ml-2 font-mono">cleartrace.aurimas.io</span>
-            </div>
-            <div className="bg-white p-8">
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 rounded-lg p-4">
-                  <div className="text-xs text-red-700 mb-1 font-medium">High Risk Alerts</div>
-                  <div className="text-2xl font-bold text-red-700">13</div>
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute">Pending review</p>
+                      <div className="font-display text-[2.4rem] leading-none text-ink mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>15</div>
+                    </div>
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute">Avg risk score</p>
+                      <div className="font-display text-[2.4rem] leading-none text-ink mt-1" style={{ fontVariationSettings: "'opsz' 144, 'SOFT' 30" }}>36</div>
+                    </div>
+                  </div>
+
+                  <div className="hairline-thin" />
+
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute mb-3">
+                      Alert disposition · last 24h
+                    </p>
+                    <div className="flex items-end gap-1 h-16">
+                      {[3,5,2,7,9,12,8,4,6,11,15,13,9,7,5,8,10,14,16,12,9,6,4,3].map((v, i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 ${v >= 13 ? 'bg-vermillion' : v >= 8 ? 'bg-ink' : 'bg-ink-soft/40'}`}
+                          style={{ height: `${(v / 16) * 100}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-lg p-4">
-                  <div className="text-xs text-amber-700 mb-1 font-medium">Pending Review</div>
-                  <div className="text-2xl font-bold text-amber-700">15</div>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-lg p-4">
-                  <div className="text-xs text-blue-700 mb-1 font-medium">Avg Risk Score</div>
-                  <div className="text-2xl font-bold text-blue-700">36</div>
-                </div>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-4">
-                <div className="text-sm text-slate-900 font-semibold mb-3">Transaction Network</div>
-                <div className="flex items-center justify-center gap-8">
-                  {['Sender A', 'Hub', 'Receiver B', 'Shell Co'].map((n, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-[10px] font-mono ${i === 3 ? 'border-red-500 bg-red-50 text-red-700' : 'border-blue-300 bg-blue-50 text-blue-700'}`}>
-                        {n.charAt(0)}
-                      </div>
-                      {i < 3 && <div className="w-8 h-px bg-slate-300" />}
+
+                {/* Right column: ledger of three wires */}
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.28em] text-ink-mute mb-3">
+                    Wire ledger · flagged
+                  </p>
+
+                  {/* Header row */}
+                  <div className="grid grid-cols-[5rem_1fr_5rem_2.5rem] gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-mute pb-1.5 border-b border-ink">
+                    <span>Ref.</span>
+                    <span>Type</span>
+                    <span className="text-right">Amount</span>
+                    <span className="text-right">Risk</span>
+                  </div>
+
+                  {[
+                    { ref: 'CT-1742', type: 'Wire transfer · BVI → Vilnius', amount: '€69,000',  risk: 87, flagged: true },
+                    { ref: 'CT-1738', type: 'Tax payment · domestic',         amount: '€14,818',  risk: 42, flagged: false },
+                    { ref: 'CT-1731', type: 'Wire transfer · Cyprus → Riga',   amount: '€125,400', risk: 91, flagged: true },
+                  ].map((row, i) => (
+                    <div
+                      key={i}
+                      className={`grid grid-cols-[5rem_1fr_5rem_2.5rem] gap-3 items-center py-2.5 border-b border-rule font-serif text-[14px] ${row.flagged ? 'text-ink' : 'text-ink-soft'}`}
+                    >
+                      <span className="font-mono text-[12px] tracking-wider">{row.ref}</span>
+                      <span className="italic">{row.type}</span>
+                      <span className="text-right font-mono tabular-nums">{row.amount}</span>
+                      <span className={`text-right font-display text-lg leading-none ${row.risk >= 80 ? 'text-vermillion' : 'text-ink-mute'}`}>
+                        {row.risk}
+                      </span>
                     </div>
                   ))}
+
+                  {/* Marginal note */}
+                  <p className="mt-5 font-serif italic text-[13px] text-ink-mute leading-[1.55] border-l-2 border-vermillion pl-3">
+                    “The Cyprus → Riga wire matches the structuring fingerprint observed in the
+                    January typology brief. Recommend escalation.”
+                    <span className="block mt-1 not-italic font-mono text-[10px] uppercase tracking-[0.22em] text-ink-mute">— ClearTrace · Counsel</span>
+                  </p>
                 </div>
               </div>
-              <div className="space-y-2">
-                {[
-                  { risk: 87, flagged: true, type: 'WIRE_TRANSFER', amount: '€69,000' },
-                  { risk: 42, flagged: false, type: 'TAX_PAYMENT', amount: '€14,818' },
-                  { risk: 91, flagged: true, type: 'WIRE_TRANSFER', amount: '€125,400' },
-                ].map((row, i) => (
-                  <div key={i} className={`flex items-center justify-between px-4 py-2.5 rounded-lg text-xs ${row.flagged ? 'bg-red-50 border border-red-100' : 'bg-slate-50 border border-slate-200'}`}>
-                    <span className="text-slate-500 font-mono">TXN-{1000 + i}</span>
-                    <span className="text-slate-700 font-medium">{row.type}</span>
-                    <span className="text-slate-600">{row.amount}</span>
-                    <span className={`font-bold ${row.risk >= 80 ? 'text-red-600' : 'text-emerald-600'}`}>{row.risk}</span>
-                    {row.flagged && (
-                      <span className="text-red-600 text-[10px] font-semibold">Flagged</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Tech stack */}
-          <div className="mb-16">
-            <p className="text-xs text-slate-500 uppercase tracking-[0.2em] mb-4 font-semibold">Built with</p>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 font-medium hover:border-blue-300 hover:text-blue-700 shadow-sm transition-colors"
-                >
-                  {tech}
+              {/* Hover affordance */}
+              <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/[0.02] transition-colors pointer-events-none" />
+              <div className="absolute bottom-4 right-6 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-vermillion">
+                Open the case <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+            </button>
+          </section>
+
+          {/* ======================================================== */}
+          {/*  COMPILED FROM — credits                                   */}
+          {/* ======================================================== */}
+          <section className="mt-24">
+            <div className="flex items-end justify-between mb-3">
+              <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-vermillion">
+                Compiled From
+              </p>
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink-mute">
+                § III · Production Credits
+              </p>
+            </div>
+            <div className="hairline-thin mb-6" />
+            <p className="font-serif text-[15px] leading-[1.85] text-ink-soft max-w-[60rem]">
+              {credits.map((c, i) => (
+                <span key={c}>
+                  <span className="text-ink">{c}</span>
+                  {i < credits.length - 1 && <span className="mx-2 text-vermillion">·</span>}
                 </span>
               ))}
-            </div>
-          </div>
-        </div>
+              <span className="text-ink-mute italic">. Drafted, set, and pressed in a single afternoon.</span>
+            </p>
+          </section>
+        </article>
       </main>
 
-      {/* Footer */}
-      <footer className="relative border-t border-slate-200 py-6 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-600">
-            Built by <span className="text-slate-900 font-semibold">Aurimas Nausėdas</span>
-          </p>
-          <div className="flex items-center gap-6 text-sm">
-            <button
-              onClick={onCaseStudy}
-              className="text-blue-700 hover:text-blue-900 font-medium transition-colors flex items-center gap-1.5"
-            >
-              Read the case study
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-            <a
-              href="https://github.com/aurimas13/ClearTrace"
-              className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              GitHub
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-            <a
-              href="https://aurimas.io"
-              className="text-slate-600 hover:text-slate-900 transition-colors flex items-center gap-1.5"
-            >
-              aurimas.io
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+      {/* ============================================================ */}
+      {/*  COLOPHON                                                     */}
+      {/* ============================================================ */}
+      <footer className="relative z-10 mt-12">
+        <div className="max-w-[78rem] mx-auto px-6 pb-10">
+          <div className="double-rule mb-5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end font-mono text-[11px] uppercase tracking-[0.22em] text-ink-soft">
+            <div>
+              <p className="text-ink-mute mb-1">Published&nbsp;by</p>
+              <p className="font-serif normal-case tracking-normal text-base text-ink italic">
+                Aurimas Nausėdas
+              </p>
+            </div>
+            <div className="text-center">
+              <button onClick={onCaseStudy} className="link-underline hover:text-ink">
+                Read&nbsp;the&nbsp;Case&nbsp;Study&nbsp;§&nbsp;IV
+              </button>
+            </div>
+            <div className="text-right space-x-5">
+              <a href="https://github.com/aurimas13/ClearTrace" className="link-underline hover:text-ink">GitHub</a>
+              <a href="https://aurimas.io" className="link-underline hover:text-ink">aurimas.io</a>
+            </div>
           </div>
+          <p className="mt-5 text-center font-mono text-[10px] tracking-[0.32em] uppercase text-ink-mute">
+            ClearTrace&nbsp;Editorial&nbsp;·&nbsp;{toRoman(today.getFullYear())}&nbsp;·&nbsp;All&nbsp;Rights&nbsp;Reserved&nbsp;to&nbsp;the&nbsp;Tired&nbsp;Analyst
+          </p>
         </div>
       </footer>
 
-      {showHowItWorks && <HowItWorksModal onClose={() => setShowHowItWorks(false)} />}
+      {showMethod && <MethodModal onClose={() => setShowMethod(false)} />}
     </div>
   );
 }
