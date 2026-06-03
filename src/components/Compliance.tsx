@@ -132,15 +132,15 @@ export default function Compliance({ transactions, investigations }: ComplianceP
       </div>
 
       {/* Hourly alert volume */}
-      <div className="bg-white rounded-2xl card-shadow overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-white rounded-none card-shadow overflow-hidden">
+        <div className="px-5 py-4 border-b border-rule-strong bg-paper-deep flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-700" />
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            <Activity className="w-4 h-4 text-vermillion" />
+            <h3 className="text-sm font-bold text-ink uppercase tracking-wider">
               Alert volume by hour
             </h3>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-ink-mute">
             Peak: hour {hourlyVolume.indexOf(Math.max(...hourlyVolume))}:00 ·{' '}
             {Math.max(...hourlyVolume)} alerts
           </p>
@@ -152,10 +152,10 @@ export default function Compliance({ transactions, investigations }: ComplianceP
 
       {/* Conversion funnel + Typology mix */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-2xl card-shadow overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-            <ListChecks className="w-4 h-4 text-blue-700" />
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+        <div className="bg-white rounded-none card-shadow overflow-hidden">
+          <div className="px-5 py-4 border-b border-rule-strong bg-paper-deep flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-vermillion" />
+            <h3 className="text-sm font-bold text-ink uppercase tracking-wider">
               Alert \u2192 SAR conversion funnel
             </h3>
           </div>
@@ -164,14 +164,14 @@ export default function Compliance({ transactions, investigations }: ComplianceP
               label="Flagged transactions"
               count={flagged}
               max={flagged}
-              color="bg-blue-500"
+              color="bg-paper-deep0"
               icon={Activity}
             />
             <FunnelRow
               label="Cases opened"
               count={investigated}
               max={flagged}
-              color="bg-indigo-500"
+              color="bg-paper-deep0"
               icon={ListChecks}
             />
             <FunnelRow
@@ -198,10 +198,10 @@ export default function Compliance({ transactions, investigations }: ComplianceP
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl card-shadow overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
+        <div className="bg-white rounded-none card-shadow overflow-hidden">
+          <div className="px-5 py-4 border-b border-rule-strong bg-paper-deep flex items-center gap-2">
             <AlertOctagon className="w-4 h-4 text-rose-700" />
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            <h3 className="text-sm font-bold text-ink uppercase tracking-wider">
               AML typology mix
             </h3>
           </div>
@@ -209,19 +209,19 @@ export default function Compliance({ transactions, investigations }: ComplianceP
             {typologyMix.map((row) => (
               <div key={row.id}>
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-semibold text-slate-700">{row.meta.label}</span>
-                  <span className="font-bold text-slate-800 tabular-nums">
+                  <span className="font-semibold text-ink-soft">{row.meta.label}</span>
+                  <span className="font-bold text-ink tabular-nums">
                     {row.count}{' '}
-                    <span className="text-slate-400 font-medium">({row.pct}%)</span>
+                    <span className="text-ink-mute font-medium">({row.pct}%)</span>
                   </span>
                 </div>
-                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-paper-deep rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-rose-400 to-red-600"
                     style={{ width: `${Math.min(100, row.pct)}%` }}
                   />
                 </div>
-                <p className="text-[10.5px] text-slate-500 mt-1 leading-snug">
+                <p className="text-[10.5px] text-ink-mute mt-1 leading-snug">
                   {row.meta.description}
                 </p>
               </div>
@@ -250,15 +250,15 @@ function KpiTile({
   sublabel?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl card-shadow p-4">
+    <div className="bg-white rounded-none card-shadow p-4">
       <div className="flex items-start justify-between mb-3">
-        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">{label}</span>
+        <span className="text-[10px] uppercase tracking-wider font-bold text-ink-mute">{label}</span>
         <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${accent} flex items-center justify-center shadow-sm`}>
           <Icon className="w-4 h-4 text-white" />
         </div>
       </div>
-      <p className="text-2xl font-extrabold text-slate-900 tabular-nums leading-none">{value}</p>
-      {sublabel && <p className="text-[11px] text-slate-500 mt-1.5">{sublabel}</p>}
+      <p className="text-2xl font-display font-semibold text-ink tabular-nums leading-none">{value}</p>
+      {sublabel && <p className="text-[11px] text-ink-mute mt-1.5">{sublabel}</p>}
     </div>
   );
 }
@@ -275,12 +275,12 @@ function HourlyBarChart({ values }: { values: number[] }) {
             title={`${i}:00 — ${v} alerts`}
           >
             {v > 0 && (
-              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-700 opacity-0 group-hover:opacity-100 transition-opacity tabular-nums">
+              <span className="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity tabular-nums">
                 {v}
               </span>
             )}
           </div>
-          <span className="text-[9px] text-slate-400 font-medium tabular-nums">
+          <span className="text-[9px] text-ink-mute font-medium tabular-nums">
             {i % 3 === 0 ? `${String(i).padStart(2, '0')}` : ''}
           </span>
         </div>
@@ -306,16 +306,16 @@ function FunnelRow({
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
-        <span className="text-slate-700 font-semibold inline-flex items-center gap-1.5">
-          <Icon className="w-3.5 h-3.5 text-slate-400" />
+        <span className="text-ink-soft font-semibold inline-flex items-center gap-1.5">
+          <Icon className="w-3.5 h-3.5 text-ink-mute" />
           {label}
         </span>
-        <span className="font-bold text-slate-800 tabular-nums">
+        <span className="font-bold text-ink tabular-nums">
           {count}{' '}
-          <span className="text-slate-400 font-medium">({pct}%)</span>
+          <span className="text-ink-mute font-medium">({pct}%)</span>
         </span>
       </div>
-      <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-3 bg-paper-deep rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full ${color} transition-all`}
           style={{ width: `${Math.min(100, pct)}%` }}

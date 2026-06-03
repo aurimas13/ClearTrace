@@ -39,7 +39,7 @@ export default function StatsCards() {
       trend: 'up',
       icon: TrendingUp,
       color: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-500/10',
+      bgColor: 'bg-paper-deep0/10',
       textColor: 'text-blue-400',
     },
   ];
@@ -62,8 +62,8 @@ export default function StatsCards() {
               </span>
             </div>
             <div>
-              <p className="text-sm text-slate-400 mb-1">{stat.label}</p>
-              <p className="text-3xl font-bold text-white">{stat.value}</p>
+              <p className="text-sm text-ink-mute mb-1">{stat.label}</p>
+              <p className="text-3xl font-display font-semibold text-white">{stat.value}</p>
             </div>
           </div>
         );

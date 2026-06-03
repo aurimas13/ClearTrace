@@ -143,23 +143,23 @@ export default function SarDraftModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-white border border-rule-strong rounded-none shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-red-50 to-amber-50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-rule-strong bg-gradient-to-r from-red-50 to-amber-50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-600 to-rose-600 flex items-center justify-center shadow-sm">
               <FileWarning className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-slate-900 font-bold text-base">Suspicious Activity Report — Draft</h3>
-              <p className="text-xs text-slate-600 font-mono mt-0.5">
+              <h3 className="text-ink font-bold text-base">Suspicious Activity Report — Draft</h3>
+              <p className="text-xs text-ink-soft font-mono mt-0.5">
                 {sarRef} · Case {caseId}
               </p>
             </div>
           </div>
           <button
             onClick={onCancel}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-white transition-colors"
+            className="p-1.5 rounded-lg text-ink-mute hover:text-ink hover:bg-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -170,10 +170,10 @@ export default function SarDraftModal({
           {/* 1. Subject */}
           <Section title="1. Subject Information">
             <Field label="Primary Account">
-              <span className="font-mono text-slate-900">{transaction.sender_account}</span>
+              <span className="font-mono text-ink">{transaction.sender_account}</span>
             </Field>
             <Field label="Counterparty">
-              <span className="font-mono text-slate-900">{transaction.receiver_account}</span>
+              <span className="font-mono text-ink">{transaction.receiver_account}</span>
             </Field>
           </Section>
 
@@ -190,7 +190,7 @@ export default function SarDraftModal({
                 })}
               </Field>
               <Field label="Amount">
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-ink">
                   {transaction.amount.toLocaleString(undefined, {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
@@ -214,7 +214,7 @@ export default function SarDraftModal({
               </Field>
             </div>
             <div className="mt-3">
-              <div className="text-xs uppercase tracking-wider font-semibold text-slate-500 mb-2">
+              <div className="text-xs uppercase tracking-wider font-semibold text-ink-mute mb-2">
                 Activity types
               </div>
               <div className="flex flex-wrap gap-2">
@@ -232,7 +232,7 @@ export default function SarDraftModal({
 
           {/* 3. Narrative */}
           <Section title="3. Narrative">
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+            <div className="bg-paper-deep border border-rule-strong rounded-lg p-4 text-sm text-ink-soft leading-relaxed whitespace-pre-line">
               {narrative}
             </div>
           </Section>
@@ -240,13 +240,13 @@ export default function SarDraftModal({
           {/* 4. Supporting */}
           <Section title={`4. Supporting Transactions (${relatedTransactions.length})`}>
             {relatedTransactions.length === 0 ? (
-              <p className="text-sm text-slate-500 italic">
+              <p className="text-sm text-ink-mute italic">
                 No additional related transactions identified in network analysis.
               </p>
             ) : (
-              <div className="border border-slate-200 rounded-lg overflow-hidden">
+              <div className="border border-rule-strong rounded-lg overflow-hidden">
                 <table className="w-full text-xs">
-                  <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider">
+                  <thead className="bg-paper-deep text-ink-mute uppercase tracking-wider">
                     <tr>
                       <th className="px-3 py-2 text-left font-semibold">ID</th>
                       <th className="px-3 py-2 text-left font-semibold">Date</th>
@@ -257,14 +257,14 @@ export default function SarDraftModal({
                   <tbody className="divide-y divide-slate-100">
                     {relatedTransactions.slice(0, 8).map((t) => (
                       <tr key={t.id}>
-                        <td className="px-3 py-2 font-mono text-blue-700 font-semibold">{t.id}</td>
-                        <td className="px-3 py-2 text-slate-600">
+                        <td className="px-3 py-2 font-mono text-vermillion font-semibold">{t.id}</td>
+                        <td className="px-3 py-2 text-ink-soft">
                           {new Date(t.transaction_date).toLocaleDateString('en-US', {
                             month: 'short',
                             day: '2-digit',
                           })}
                         </td>
-                        <td className="px-3 py-2 text-right font-semibold text-slate-900">
+                        <td className="px-3 py-2 text-right font-semibold text-ink">
                           {t.amount.toLocaleString(undefined, {
                             minimumFractionDigits: 0,
                             maximumFractionDigits: 0,
@@ -294,11 +294,11 @@ export default function SarDraftModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+        <div className="px-6 py-3 border-t border-rule-strong bg-paper-deep flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
               onClick={handleCopy}
-              className="px-3 py-2 text-xs rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 text-xs rounded-lg bg-white border border-rule-strong hover:bg-paper-deep text-ink-soft font-semibold flex items-center gap-1.5 transition-colors"
             >
               {copied ? (
                 <>
@@ -314,7 +314,7 @@ export default function SarDraftModal({
             </button>
             <button
               onClick={handleDownload}
-              className="px-3 py-2 text-xs rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold flex items-center gap-1.5 transition-colors"
+              className="px-3 py-2 text-xs rounded-lg bg-white border border-rule-strong hover:bg-paper-deep text-ink-soft font-semibold flex items-center gap-1.5 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               Download .txt
@@ -323,7 +323,7 @@ export default function SarDraftModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onCancel}
-              className="px-4 py-2 text-sm rounded-lg bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-semibold transition-colors"
+              className="px-4 py-2 text-sm rounded-lg bg-white border border-rule-strong hover:bg-paper-deep text-ink-soft font-semibold transition-colors"
             >
               Cancel
             </button>
@@ -354,7 +354,7 @@ export default function SarDraftModal({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h4 className="text-xs uppercase tracking-wider font-bold text-slate-700 mb-2">{title}</h4>
+      <h4 className="text-xs uppercase tracking-wider font-bold text-ink-soft mb-2">{title}</h4>
       {children}
     </div>
   );
@@ -363,8 +363,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="text-sm">
-      <div className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 mb-0.5">{label}</div>
-      <div className="text-slate-700">{children}</div>
+      <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-mute mb-0.5">{label}</div>
+      <div className="text-ink-soft">{children}</div>
     </div>
   );
 }

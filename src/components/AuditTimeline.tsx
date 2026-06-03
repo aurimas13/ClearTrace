@@ -27,14 +27,14 @@ const ICON_FOR: Record<AuditEventType, typeof PlayCircle> = {
 };
 
 const COLOR_FOR: Record<AuditEventType, string> = {
-  case_opened: 'bg-blue-50 text-blue-700 ring-blue-200',
-  reinvestigated: 'bg-blue-50 text-blue-700 ring-blue-200',
+  case_opened: 'bg-paper-deep text-vermillion ring-blue-200',
+  reinvestigated: 'bg-paper-deep text-vermillion ring-blue-200',
   note_saved: 'bg-amber-50 text-amber-700 ring-amber-200',
-  status_changed: 'bg-slate-100 text-slate-700 ring-slate-200',
+  status_changed: 'bg-paper-deep text-ink-soft ring-slate-200',
   sar_drafted: 'bg-rose-50 text-rose-700 ring-rose-200',
   sar_filed: 'bg-red-50 text-red-700 ring-red-200',
-  assigned: 'bg-indigo-50 text-indigo-700 ring-indigo-200',
-  reset: 'bg-slate-100 text-slate-600 ring-slate-200',
+  assigned: 'bg-paper-deep text-vermillion ring-indigo-200',
+  reset: 'bg-paper-deep text-ink-soft ring-slate-200',
 };
 
 function formatTime(iso: string) {
@@ -59,7 +59,7 @@ function formatTime(iso: string) {
 export default function AuditTimeline({ events }: AuditTimelineProps) {
   if (events.length === 0) {
     return (
-      <div className="text-xs text-slate-500 italic">No audit events yet for this case.</div>
+      <div className="text-xs text-ink-mute italic">No audit events yet for this case.</div>
     );
   }
 
@@ -69,7 +69,7 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
   return (
     <ol className="relative space-y-3">
       {/* Vertical line */}
-      <div className="absolute left-[14px] top-2 bottom-2 w-px bg-slate-200" aria-hidden />
+      <div className="absolute left-[14px] top-2 bottom-2 w-px bg-paper-shadow" aria-hidden />
       {sorted.map((e) => {
         const Icon = ICON_FOR[e.type] || History;
         const color = COLOR_FOR[e.type] || COLOR_FOR.status_changed;
@@ -80,9 +80,9 @@ export default function AuditTimeline({ events }: AuditTimelineProps) {
             >
               <Icon className="w-3.5 h-3.5" />
             </span>
-            <div className="text-sm text-slate-800 leading-snug">{e.message}</div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              <span className="font-medium text-slate-700">{e.actor}</span> · {formatTime(e.ts)}
+            <div className="text-sm text-ink leading-snug">{e.message}</div>
+            <div className="text-xs text-ink-mute mt-0.5">
+              <span className="font-medium text-ink-soft">{e.actor}</span> · {formatTime(e.ts)}
             </div>
           </li>
         );

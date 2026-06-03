@@ -35,14 +35,14 @@ function AccountNode({ data }: { data: AccountNodeData }) {
       className={`px-3 py-2 rounded-lg shadow-md text-center min-w-[120px] border-2 ${
         data.isHighRisk
           ? 'bg-red-50 border-red-500'
-          : 'bg-white border-blue-300'
+          : 'bg-white border-rule-strong'
       }`}
     >
       <Handle type="target" position={Position.Left} className="!bg-slate-400 !w-2 !h-2" />
-      <div className={`text-xs font-mono font-semibold truncate ${data.isHighRisk ? 'text-red-700' : 'text-blue-700'}`}>
+      <div className={`text-xs font-mono font-semibold truncate ${data.isHighRisk ? 'text-red-700' : 'text-vermillion'}`}>
         {data.label}
       </div>
-      <div className="text-[10px] text-slate-500 mt-0.5">
+      <div className="text-[10px] text-ink-mute mt-0.5">
         {data.connectionCount} txn{data.connectionCount !== 1 ? 's' : ''}
       </div>
       <Handle type="source" position={Position.Right} className="!bg-slate-400 !w-2 !h-2" />
@@ -185,28 +185,28 @@ export default function NetworkGraph({ transactions, selectedAccount, onSelectAc
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-        <p className="text-slate-600">No transaction data to visualize.</p>
+      <div className="bg-white border border-rule-strong rounded-none p-12 text-center card-shadow">
+        <p className="text-ink-soft">No transaction data to visualize.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden card-shadow">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50 flex-wrap gap-3">
+    <div className="bg-white rounded-none overflow-hidden card-shadow">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-rule-strong bg-paper-deep flex-wrap gap-3">
         <div>
-          <h3 className="text-lg font-bold text-slate-900">Transaction Network</h3>
-          <p className="text-xs text-slate-600 mt-0.5">
+          <h3 className="text-lg font-bold text-ink">Transaction Network</h3>
+          <p className="text-xs text-ink-soft mt-0.5">
             {uniqueAccounts} accounts &middot; {transactions.length} transactions &middot;{' '}
             <span className="text-red-600 font-semibold">{highRiskNodes} high-risk nodes</span>
             {selectedAccount && (
               <>
                 {' '}&middot;{' '}
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-mono font-semibold">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-paper-deep text-vermillion border border-rule-strong font-mono font-semibold">
                   Focused: {selectedAccount}
                   <button
                     onClick={() => onSelectAccount?.(null)}
-                    className="ml-1 text-blue-700 hover:text-blue-900"
+                    className="ml-1 text-vermillion hover:text-oxblood"
                     title="Clear focus"
                   >
                     ×
@@ -219,15 +219,15 @@ export default function NetworkGraph({ transactions, selectedAccount, onSelectAc
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full border-2 border-red-500 bg-red-50"></div>
-            <span className="text-slate-600">Risk &gt; 80</span>
+            <span className="text-ink-soft">Risk &gt; 80</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full border-2 border-blue-300 bg-white"></div>
-            <span className="text-slate-600">Normal</span>
+            <div className="w-2.5 h-2.5 rounded-full border-2 border-rule-strong bg-white"></div>
+            <span className="text-ink-soft">Normal</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-6 h-0.5 bg-red-500"></div>
-            <span className="text-slate-600">High risk edge</span>
+            <span className="text-ink-soft">High risk edge</span>
           </div>
         </div>
       </div>
@@ -254,7 +254,7 @@ export default function NetworkGraph({ transactions, selectedAccount, onSelectAc
           <Background color="#cbd5e1" gap={20} />
           <Controls
             showInteractive={false}
-            className="!bg-white !border-slate-200 !shadow-md [&>button]:!bg-white [&>button]:!border-slate-200 [&>button]:!text-slate-600 [&>button:hover]:!bg-slate-50"
+            className="!bg-white !border-rule-strong !shadow-md [&>button]:!bg-white [&>button]:!border-rule-strong [&>button]:!text-ink-soft [&>button:hover]:!bg-paper-deep"
           />
         </ReactFlow>
       </div>

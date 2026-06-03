@@ -118,11 +118,11 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
   const discrepancies = fields.filter((f) => !f.consistent);
 
   return (
-    <div className="border border-slate-200 rounded-lg bg-white overflow-hidden">
-      <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
+    <div className="border border-rule-strong rounded-lg bg-white overflow-hidden">
+      <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-b border-rule-strong flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           <FileScan className="w-4 h-4 text-violet-700" />
-          <span className="text-xs uppercase tracking-wider font-bold text-slate-700">
+          <span className="text-xs uppercase tracking-wider font-bold text-ink-soft">
             Document AI \u2014 Wire-instruction extraction
           </span>
         </div>
@@ -162,7 +162,7 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
           )}
 
           <table className="w-full text-xs">
-            <thead className="text-slate-500 uppercase tracking-wider text-[10px]">
+            <thead className="text-ink-mute uppercase tracking-wider text-[10px]">
               <tr>
                 <th className="text-left py-1.5">Field</th>
                 <th className="text-left py-1.5">Extracted value</th>
@@ -173,9 +173,9 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
               {fields.map((f) => (
                 <tr
                   key={f.field}
-                  className={`border-t border-slate-100 ${!f.consistent ? 'bg-amber-50/50' : ''}`}
+                  className={`border-t border-rule ${!f.consistent ? 'bg-amber-50/50' : ''}`}
                 >
-                  <td className="py-1.5 pr-3 text-slate-600 font-medium align-top">
+                  <td className="py-1.5 pr-3 text-ink-soft font-medium align-top">
                     {f.field}
                     {!f.consistent && (
                       <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 text-[9px] font-bold">
@@ -183,7 +183,7 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
                       </span>
                     )}
                   </td>
-                  <td className="py-1.5 pr-3 text-slate-800 align-top">
+                  <td className="py-1.5 pr-3 text-ink align-top">
                     <div className="font-mono">{f.value}</div>
                     {f.discrepancy && (
                       <div className="text-[11px] text-amber-700 mt-0.5">{f.discrepancy}</div>
@@ -195,7 +195,7 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
                         f.confidence >= 0.95
                           ? 'text-emerald-600'
                           : f.confidence >= 0.85
-                          ? 'text-blue-600'
+                          ? 'text-vermillion'
                           : 'text-amber-600'
                       }`}
                     >
@@ -210,13 +210,13 @@ export default function DocumentAiPanel({ transaction }: DocumentAiPanelProps) {
       )}
 
       {!scanned && !scanning && (
-        <div className="p-6 text-center text-xs text-slate-500">
+        <div className="p-6 text-center text-xs text-ink-mute">
           Click <span className="font-semibold text-violet-700">Run vision extraction</span> to parse
           the source SWIFT message PDF and cross-check every field against the booked transaction.
         </div>
       )}
 
-      <div className="px-4 py-2 border-t border-slate-100 bg-slate-50 text-[10px] text-slate-500 leading-relaxed">
+      <div className="px-4 py-2 border-t border-rule bg-paper-deep text-[10px] text-ink-mute leading-relaxed">
         Vision-LLM (Donut + LayoutLMv3 ensemble) extracts structured fields from MT103/MT202 PDFs with
         layout-aware token alignment. Mismatches are surfaced for analyst review per BSA documentation
         retention rules.

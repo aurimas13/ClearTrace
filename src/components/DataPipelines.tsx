@@ -49,7 +49,7 @@ const STATUS_META: Record<PipelineStatus, { label: string; classes: string; icon
   },
   paused: {
     label: 'Paused',
-    classes: 'bg-slate-100 text-slate-600 border-slate-200',
+    classes: 'bg-paper-deep text-ink-soft border-rule-strong',
     icon: Pause,
   },
 };
@@ -183,28 +183,28 @@ export default function DataPipelines({ transactions, investigations, lastRefres
           icon={Activity}
           label="Records ingested today"
           value={totals.records.toLocaleString()}
-          accent="text-blue-700"
+          accent="text-vermillion"
         />
         <OverviewCard
           icon={Clock}
           label="Avg. ingest latency"
           value={`${totals.avgLatency} ms`}
-          accent="text-indigo-700"
+          accent="text-vermillion"
         />
         <OverviewCard
           icon={CheckCircle2}
           label="Last refresh"
           value={lastRefreshed ? formatRelative(lastRefreshed) : '—'}
-          accent="text-slate-700"
+          accent="text-ink-soft"
         />
       </div>
 
       {/* Pipeline table */}
-      <div className="bg-white rounded-2xl card-shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+      <div className="bg-white rounded-none card-shadow overflow-hidden">
+        <div className="px-6 py-4 border-b border-rule-strong flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900">Ingestion Pipelines</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="text-base font-bold text-ink">Ingestion Pipelines</h3>
+            <p className="text-xs text-ink-mute mt-0.5">
               Source systems feeding ClearTrace · realtime health monitoring
             </p>
           </div>
@@ -217,15 +217,15 @@ export default function DataPipelines({ transactions, investigations, lastRefres
             return (
               <div
                 key={p.id}
-                className="px-6 py-5 grid grid-cols-12 gap-4 items-center hover:bg-slate-50/60 transition-colors"
+                className="px-6 py-5 grid grid-cols-12 gap-4 items-center hover:bg-paper-deep/60 transition-colors"
               >
                 <div className="col-span-12 md:col-span-4 flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-blue-700" />
+                  <div className="w-10 h-10 rounded-lg bg-paper-deep border border-rule-strong flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-vermillion" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-slate-900">{p.name}</span>
+                      <span className="text-sm font-semibold text-ink">{p.name}</span>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border uppercase tracking-wider ${meta.classes}`}
                       >
@@ -233,8 +233,8 @@ export default function DataPipelines({ transactions, investigations, lastRefres
                         {meta.label}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5 font-mono">{p.source}</p>
-                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">{p.description}</p>
+                    <p className="text-xs text-ink-mute mt-0.5 font-mono">{p.source}</p>
+                    <p className="text-xs text-ink-soft mt-1.5 leading-relaxed">{p.description}</p>
                   </div>
                 </div>
 
@@ -243,14 +243,14 @@ export default function DataPipelines({ transactions, investigations, lastRefres
                 <Stat
                   label="Latency"
                   value={`${p.latencyMs} ms`}
-                  accent={p.latencyMs > 500 ? 'text-amber-700' : 'text-slate-900'}
+                  accent={p.latencyMs > 500 ? 'text-amber-700' : 'text-ink'}
                 />
                 <Stat label="Format" value={p.format} mono />
                 <div className="col-span-6 md:col-span-1 text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">
+                  <div className="text-[10px] uppercase tracking-wider text-ink-mute font-semibold">
                     Synced
                   </div>
-                  <div className="text-sm text-slate-700 font-medium">{formatRelative(new Date(p.lastSync))}</div>
+                  <div className="text-sm text-ink-soft font-medium">{formatRelative(new Date(p.lastSync))}</div>
                 </div>
               </div>
             );
@@ -259,9 +259,9 @@ export default function DataPipelines({ transactions, investigations, lastRefres
       </div>
 
       {/* Note */}
-      <p className="text-xs text-slate-500 italic px-1">
+      <p className="text-xs text-ink-mute italic px-1">
         Demo environment. Pipeline metrics are derived from the synthetic dataset and refresh when you press{' '}
-        <span className="font-semibold text-slate-700">Refresh</span>.
+        <span className="font-semibold text-ink-soft">Refresh</span>.
       </p>
     </div>
   );
@@ -279,12 +279,12 @@ function OverviewCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 card-shadow">
+    <div className="bg-white rounded-none p-5 card-shadow">
       <div className="flex items-center gap-2 mb-2">
-        <Icon className="w-4 h-4 text-slate-400" />
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</span>
+        <Icon className="w-4 h-4 text-ink-mute" />
+        <span className="text-xs font-semibold uppercase tracking-wider text-ink-mute">{label}</span>
       </div>
-      <div className={`text-2xl font-extrabold ${accent || 'text-slate-900'}`}>{value}</div>
+      <div className={`text-2xl font-display font-semibold ${accent || 'text-ink'}`}>{value}</div>
     </div>
   );
 }
@@ -302,9 +302,9 @@ function Stat({
 }) {
   return (
     <div className="col-span-6 md:col-span-2">
-      <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">{label}</div>
+      <div className="text-[10px] uppercase tracking-wider text-ink-mute font-semibold">{label}</div>
       <div
-        className={`text-sm font-semibold ${mono ? 'font-mono' : ''} ${accent || 'text-slate-900'}`}
+        className={`text-sm font-semibold ${mono ? 'font-mono' : ''} ${accent || 'text-ink'}`}
       >
         {value}
       </div>

@@ -31,7 +31,7 @@ interface ActivityInsightsDrawerProps {
 const STATUS_META: Record<UserStatus, { label: string; classes: string; description: string }> = {
   first_visit: {
     label: 'First visit',
-    classes: 'bg-blue-50 text-blue-700 border-blue-200',
+    classes: 'bg-paper-deep text-vermillion border-rule-strong',
     description: 'Welcome to ClearTrace! This is your first session.',
   },
   returning: {
@@ -87,22 +87,22 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
     <div className="fixed inset-0 z-[80] flex justify-end">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
       <aside
-        className="relative w-full max-w-md bg-white shadow-2xl border-l border-slate-200 flex flex-col animate-toast-in"
+        className="relative w-full max-w-md bg-white shadow-2xl border-l border-rule-strong flex flex-col animate-toast-in"
         role="dialog"
         aria-label="Activity insights"
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white flex items-start justify-between gap-3">
+        <div className="px-5 py-4 border-b border-rule-strong bg-gradient-to-br from-slate-50 to-white flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-700 flex items-center justify-center shadow-sm">
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-ink-mute">
                   User insights
                 </p>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-ink">
                   Your ClearTrace activity
                 </h3>
               </div>
@@ -117,7 +117,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
           <button
             onClick={onClose}
             aria-label="Close drawer"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+            className="p-1.5 rounded-lg text-ink-mute hover:text-ink-soft hover:bg-paper-deep"
           >
             <X className="w-4 h-4" />
           </button>
@@ -125,7 +125,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
 
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {/* Hero copy */}
-          <p className="text-sm text-slate-600 leading-relaxed">{meta.description}</p>
+          <p className="text-sm text-ink-soft leading-relaxed">{meta.description}</p>
 
           {!state ? (
             <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 inline-flex items-start gap-2">
@@ -173,12 +173,12 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
               </div>
 
               {/* User identity */}
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1">
+              <div className="rounded-lg border border-rule-strong bg-paper-deep/60 p-3">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-ink-mute mb-1">
                   Local user identifier
                 </p>
-                <p className="font-mono text-xs text-slate-700 break-all">{state.userId}</p>
-                <p className="text-[10.5px] text-slate-500 mt-1.5 leading-snug">
+                <p className="font-mono text-xs text-ink-soft break-all">{state.userId}</p>
+                <p className="text-[10.5px] text-ink-mute mt-1.5 leading-snug">
                   Generated locally on first visit. Stored in your browser only \u2014 no PII leaves
                   this device.
                 </p>
@@ -186,7 +186,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
 
               {/* 24h sparkline */}
               <div>
-                <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">
+                <h4 className="text-[10px] uppercase tracking-wider font-bold text-ink-mute mb-2">
                   Activity over last 24h
                 </h4>
                 <Sparkline
@@ -197,7 +197,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
                   fill="rgba(124, 58, 237, 0.12)"
                   className="w-full"
                 />
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                <div className="flex justify-between text-[10px] text-ink-mute mt-1">
                   <span>24h ago</span>
                   <span>now</span>
                 </div>
@@ -206,7 +206,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
               {/* Event-type breakdown */}
               {breakdown.length > 0 && (
                 <div>
-                  <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">
+                  <h4 className="text-[10px] uppercase tracking-wider font-bold text-ink-mute mb-2">
                     What you've been doing
                   </h4>
                   <ul className="space-y-1.5">
@@ -216,12 +216,12 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
                       return (
                         <li key={row.type}>
                           <div className="flex items-baseline justify-between text-xs mb-0.5">
-                            <span className="text-slate-700 font-medium">
+                            <span className="text-ink-soft font-medium">
                               {formatEventType(row.type)}
                             </span>
-                            <span className="font-bold text-slate-800 tabular-nums">{row.count}</span>
+                            <span className="font-bold text-ink tabular-nums">{row.count}</span>
                           </div>
-                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-paper-deep rounded-full overflow-hidden">
                             <div
                               className="h-full rounded-full bg-gradient-to-r from-indigo-400 to-violet-600"
                               style={{ width: `${pct}%` }}
@@ -236,11 +236,11 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
 
               {/* Recent events */}
               <div>
-                <h4 className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-2">
+                <h4 className="text-[10px] uppercase tracking-wider font-bold text-ink-mute mb-2">
                   Recent events ({recentEvents.length} of {state.events.length})
                 </h4>
                 {recentEvents.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">
+                  <p className="text-xs text-ink-mute italic">
                     No events recorded yet \u2014 click around the app and they'll show up here.
                   </p>
                 ) : (
@@ -248,18 +248,18 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
                     {recentEvents.map((e) => (
                       <li
                         key={e.id}
-                        className="border border-slate-200 rounded-md bg-white px-3 py-2"
+                        className="border border-rule-strong rounded-md bg-white px-3 py-2"
                       >
                         <div className="flex items-baseline justify-between gap-2">
-                          <span className="text-xs font-semibold text-slate-800">
+                          <span className="text-xs font-semibold text-ink">
                             {formatEventType(e.type)}
                           </span>
-                          <span className="text-[10px] text-slate-400 tabular-nums whitespace-nowrap">
+                          <span className="text-[10px] text-ink-mute tabular-nums whitespace-nowrap">
                             {formatRelative(e.ts)}
                           </span>
                         </div>
                         {e.payload && Object.keys(e.payload).length > 0 && (
-                          <p className="text-[11px] text-slate-500 font-mono leading-snug mt-0.5 truncate">
+                          <p className="text-[11px] text-ink-mute font-mono leading-snug mt-0.5 truncate">
                             {summarisePayload(e.type, e.payload)}
                           </p>
                         )}
@@ -273,12 +273,12 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
         </div>
 
         {/* Footer actions */}
-        <div className="border-t border-slate-200 px-5 py-3 bg-slate-50 flex items-center justify-between gap-2">
+        <div className="border-t border-rule-strong px-5 py-3 bg-paper-deep flex items-center justify-between gap-2">
           <button
             onClick={() => {
               refresh();
             }}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-rule-strong text-ink-soft hover:bg-paper-deep transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Refresh
@@ -291,7 +291,7 @@ export default function ActivityInsightsDrawer({ open, onClose }: ActivityInsigh
                   refresh();
                 }
               }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-white border border-rule-strong text-ink-soft hover:bg-paper-deep transition-colors"
             >
               Clear events
             </button>
@@ -329,9 +329,9 @@ function Stat({
   accent: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
+    <div className="rounded-lg border border-rule-strong bg-white p-3">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">
+        <span className="text-[10px] uppercase tracking-wider font-bold text-ink-mute">
           {label}
         </span>
         <div
@@ -340,8 +340,8 @@ function Stat({
           <Icon className="w-3.5 h-3.5 text-white" />
         </div>
       </div>
-      <p className="text-lg font-extrabold text-slate-900 tabular-nums leading-none">{value}</p>
-      {hint && <p className="text-[10px] text-slate-500 mt-1">{hint}</p>}
+      <p className="text-lg font-extrabold text-ink tabular-nums leading-none">{value}</p>
+      {hint && <p className="text-[10px] text-ink-mute mt-1">{hint}</p>}
     </div>
   );
 }

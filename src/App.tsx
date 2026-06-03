@@ -524,14 +524,14 @@ function App() {
             {activeTab === 'alerts' && (
               <div className="space-y-8">
                 <div>
-                  <h3 className="text-xl font-semibold text-slate-900 mb-4">Network Analysis</h3>
+                  <h3 className="text-xl font-display font-semibold text-ink mb-4">Network Analysis</h3>
                   <NetworkGraph
                     transactions={transactions}
                     selectedAccount={focusedAccount}
                     onSelectAccount={setFocusedAccount}
                   />
                   {focusedAccount && (
-                    <p className="text-xs text-slate-500 mt-2 italic">
+                    <p className="text-xs text-ink-mute mt-2 italic">
                       Click anywhere on the canvas to clear the focused account.
                     </p>
                   )}
@@ -539,8 +539,8 @@ function App() {
 
                 <div>
                   <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <h3 className="text-xl font-semibold text-slate-900">Flagged Transactions</h3>
-                    <span className="text-sm text-slate-600">
+                    <h3 className="text-xl font-display font-semibold text-ink">Flagged Transactions</h3>
+                    <span className="text-sm text-ink-soft">
                       <span className="text-emerald-700 font-medium">{totalInvestigatedCount}</span> reviewed of{' '}
                       {transactions.length} total
                     </span>

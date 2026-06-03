@@ -104,7 +104,7 @@ function MethodModal({ onClose }: { onClose: () => void }) {
                   {s.num}
                 </div>
                 <div>
-                  <h4 className="font-display text-xl font-semibold text-ink mb-1.5">{s.title}</h4>
+                  <h4 className="font-display text-xl font-display font-semibold text-ink mb-1.5">{s.title}</h4>
                   <p className="font-serif text-[15px] leading-[1.65] text-ink-soft">{s.desc}</p>
                 </div>
               </li>

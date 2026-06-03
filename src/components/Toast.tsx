@@ -64,8 +64,8 @@ const KIND_META: Record<
   info: {
     Icon: Info,
     ring: 'ring-blue-200',
-    bar: 'bg-blue-500',
-    iconColor: 'text-blue-600',
+    bar: 'bg-paper-deep0',
+    iconColor: 'text-vermillion',
     bg: 'bg-white',
   },
 };
@@ -113,18 +113,18 @@ function ToastCard({ toast, onDismiss }: { toast: ToastItem; onDismiss: () => vo
   return (
     <div
       role="status"
-      className={`pointer-events-auto relative overflow-hidden ${meta.bg} border border-slate-200 ring-1 ${meta.ring} rounded-xl shadow-lg flex items-start gap-3 p-3 pr-9 animate-toast-in`}
+      className={`pointer-events-auto relative overflow-hidden ${meta.bg} border border-rule-strong ring-1 ${meta.ring} rounded-none shadow-lg flex items-start gap-3 p-3 pr-9 animate-toast-in`}
     >
       <span className={`absolute left-0 top-0 bottom-0 w-1 ${meta.bar}`} />
       <Icon className={`w-5 h-5 ${meta.iconColor} shrink-0 mt-0.5`} />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-slate-900 leading-tight">{toast.title}</p>
-        {toast.message && <p className="text-xs text-slate-600 mt-0.5 leading-snug">{toast.message}</p>}
+        <p className="text-sm font-semibold text-ink leading-tight">{toast.title}</p>
+        {toast.message && <p className="text-xs text-ink-soft mt-0.5 leading-snug">{toast.message}</p>}
       </div>
       <button
         onClick={onDismiss}
         aria-label="Dismiss"
-        className="absolute top-2 right-2 p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+        className="absolute top-2 right-2 p-1 rounded text-ink-mute hover:text-ink-soft hover:bg-paper-deep"
       >
         <X className="w-3.5 h-3.5" />
       </button>

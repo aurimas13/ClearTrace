@@ -88,29 +88,29 @@ export default function TransactionList({
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-        <p className="text-slate-600">No transactions match the current filters.</p>
+      <div className="bg-white border border-rule-strong rounded-none p-12 text-center card-shadow">
+        <p className="text-ink-soft">No transactions match the current filters.</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl bg-white card-shadow">
+      <div className="overflow-x-auto rounded-none bg-white card-shadow">
         <table className="w-full text-sm text-left border-separate border-spacing-0">
-          <thead className="bg-slate-50 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+          <thead className="bg-paper-deep text-xs uppercase tracking-wider text-ink-mute font-semibold">
             <tr>
-              <th className="px-4 py-3 border-b border-slate-200">ID</th>
-              <th className="px-4 py-3 border-b border-slate-200">Type</th>
-              <th className="px-4 py-3 border-b border-slate-200">Sender</th>
-              <th className="px-4 py-3 border-b border-slate-200">Receiver</th>
-              <th className="px-4 py-3 border-b border-slate-200 text-right">Amount</th>
-              <th className="px-4 py-3 border-b border-slate-200">Currency</th>
-              <th className="px-4 py-3 border-b border-slate-200">Date</th>
-              <th className="px-4 py-3 border-b border-slate-200 text-center">Risk</th>
-              <th className="px-4 py-3 border-b border-slate-200 text-center">Flagged</th>
+              <th className="px-4 py-3 border-b border-rule-strong">ID</th>
+              <th className="px-4 py-3 border-b border-rule-strong">Type</th>
+              <th className="px-4 py-3 border-b border-rule-strong">Sender</th>
+              <th className="px-4 py-3 border-b border-rule-strong">Receiver</th>
+              <th className="px-4 py-3 border-b border-rule-strong text-right">Amount</th>
+              <th className="px-4 py-3 border-b border-rule-strong">Currency</th>
+              <th className="px-4 py-3 border-b border-rule-strong">Date</th>
+              <th className="px-4 py-3 border-b border-rule-strong text-center">Risk</th>
+              <th className="px-4 py-3 border-b border-rule-strong text-center">Flagged</th>
               {/* Sticky right column so the Investigate action is always visible */}
-              <th className="px-4 py-3 border-b border-slate-200 text-center sticky right-0 bg-slate-50 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.08)]">
+              <th className="px-4 py-3 border-b border-rule-strong text-center sticky right-0 bg-paper-deep shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.08)]">
                 Action
               </th>
             </tr>
@@ -119,79 +119,79 @@ export default function TransactionList({
             {transactions.map((tx) => {
               const reviewed = investigatedMap.get(tx.id);
               const rowBg = reviewed
-                ? 'bg-slate-50/60'
+                ? 'bg-paper-deep/60'
                 : tx.is_flagged
                 ? 'bg-red-50/40'
                 : 'bg-white';
               return (
                 <tr
                   key={tx.id}
-                  className={`group transition-colors hover:bg-slate-50 ${rowBg} ${
+                  className={`group transition-colors hover:bg-paper-deep ${rowBg} ${
                     tx.is_flagged && !reviewed ? 'border-l-2 border-l-red-500' : ''
                   }`}
                 >
-                  <td className={`px-4 py-3 font-mono text-blue-700 font-semibold border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 font-mono text-vermillion font-semibold border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.id}
                   </td>
-                  <td className={`px-4 py-3 text-slate-700 capitalize border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-ink-soft capitalize border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.transaction_type}
                   </td>
-                  <td className={`px-4 py-3 font-mono text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 font-mono text-xs border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {onInspectAccount ? (
                       <button
                         onClick={() => onInspectAccount(tx.sender_account)}
-                        className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-left"
+                        className="text-vermillion hover:text-oxblood hover:underline font-medium text-left"
                         title="View customer risk profile"
                       >
                         {tx.sender_account}
                       </button>
                     ) : (
-                      <span className="text-slate-600">{tx.sender_account}</span>
+                      <span className="text-ink-soft">{tx.sender_account}</span>
                     )}
                   </td>
-                  <td className={`px-4 py-3 font-mono text-xs border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 font-mono text-xs border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {onInspectAccount ? (
                       <button
                         onClick={() => onInspectAccount(tx.receiver_account)}
-                        className="text-blue-700 hover:text-blue-900 hover:underline font-medium text-left"
+                        className="text-vermillion hover:text-oxblood hover:underline font-medium text-left"
                         title="View customer risk profile"
                       >
                         {tx.receiver_account}
                       </button>
                     ) : (
-                      <span className="text-slate-600">{tx.receiver_account}</span>
+                      <span className="text-ink-soft">{tx.receiver_account}</span>
                     )}
                   </td>
-                  <td className={`px-4 py-3 text-right font-semibold text-slate-900 border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-right font-semibold text-ink border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
-                  <td className={`px-4 py-3 text-slate-600 font-medium border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-ink-soft font-medium border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.currency}
                   </td>
-                  <td className={`px-4 py-3 text-slate-500 whitespace-nowrap border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-ink-mute whitespace-nowrap border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {formatDate(tx.transaction_date)}
                   </td>
-                  <td className={`px-4 py-3 text-center border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-center border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     <span className={`font-bold ${getRiskColor(tx.risk_score)}`}>{tx.risk_score}</span>
                     <div className="mt-1 flex justify-center">
                       <TypologyChips typologies={classifyTransaction(tx)} size="xs" />
                     </div>
                   </td>
-                  <td className={`px-4 py-3 text-center border-b border-slate-100 ${reviewed ? 'opacity-70' : ''}`}>
+                  <td className={`px-4 py-3 text-center border-b border-rule ${reviewed ? 'opacity-70' : ''}`}>
                     {tx.is_flagged ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
                         <AlertTriangle className="w-3 h-3" />
                         Yes
                       </span>
                     ) : (
-                      <span className="text-slate-400 text-xs">No</span>
+                      <span className="text-ink-mute text-xs">No</span>
                     )}
                   </td>
                   {/* Sticky right action column */}
                   <td
-                    className={`px-4 py-3 text-center border-b border-slate-100 sticky right-0 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.08)] ${
-                      reviewed ? 'bg-slate-50/95' : tx.is_flagged ? 'bg-red-50/60' : 'bg-white'
-                    } group-hover:bg-slate-50`}
+                    className={`px-4 py-3 text-center border-b border-rule sticky right-0 shadow-[-8px_0_8px_-8px_rgba(15,23,42,0.08)] ${
+                      reviewed ? 'bg-paper-deep/95' : tx.is_flagged ? 'bg-red-50/60' : 'bg-white'
+                    } group-hover:bg-paper-deep`}
                   >
                     {reviewed ? (
                       <div className="flex flex-col items-center gap-1">
@@ -202,7 +202,7 @@ export default function TransactionList({
                         <button
                           onClick={() => handleAnalyze(tx)}
                           disabled={analyzingId === tx.id}
-                          className="text-[11px] text-blue-700 hover:text-blue-900 hover:underline font-medium disabled:opacity-50"
+                          className="text-[11px] text-vermillion hover:text-oxblood hover:underline font-medium disabled:opacity-50"
                         >
                           {analyzingId === tx.id ? 'Re-analyzing…' : 'Re-investigate'}
                         </button>
@@ -212,7 +212,7 @@ export default function TransactionList({
                         onClick={() => handleAnalyze(tx)}
                         disabled={analyzingId === tx.id}
                         title="Run AI investigation to assess fraud risk"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white primary-shadow hover:-translate-y-0.5"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-ink hover:bg-oxblood text-paper shadow-[3px_3px_0_0_var(--ink)] hover:-translate-y-0.5"
                       >
                         {analyzingId === tx.id ? (
                           <>

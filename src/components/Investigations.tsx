@@ -55,7 +55,7 @@ const STATUS_META: Record<
   open: {
     label: 'Open',
     icon: Clock,
-    classes: 'bg-blue-50 text-blue-700 border-blue-200',
+    classes: 'bg-paper-deep text-vermillion border-rule-strong',
   },
   escalated: {
     label: 'Escalated',
@@ -332,13 +332,13 @@ export default function Investigations({ transactions, investigations, onChanged
 
   if (latestPerTx.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center card-shadow">
-        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Brain className="w-8 h-8 text-blue-700" />
+      <div className="bg-white border border-rule-strong rounded-none p-12 text-center card-shadow">
+        <div className="w-16 h-16 bg-paper-deep rounded-full flex items-center justify-center mx-auto mb-4">
+          <Brain className="w-8 h-8 text-vermillion" />
         </div>
-        <h3 className="text-xl font-semibold text-slate-900 mb-2">No active investigations</h3>
-        <p className="text-slate-600 max-w-md mx-auto">
-          When an analyst clicks <span className="font-semibold text-slate-900">Investigate</span> on a transaction in the
+        <h3 className="text-xl font-display font-semibold text-ink mb-2">No active investigations</h3>
+        <p className="text-ink-soft max-w-md mx-auto">
+          When an analyst clicks <span className="font-semibold text-ink">Investigate</span> on a transaction in the
           Alerts queue, the case will open here for triage and disposition.
         </p>
       </div>
@@ -366,7 +366,7 @@ export default function Investigations({ transactions, investigations, onChanged
       {/* Filter bar */}
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider mr-2">
+          <div className="flex items-center gap-2 text-xs text-ink-mute font-semibold uppercase tracking-wider mr-2">
             <FilterIcon className="w-3.5 h-3.5" />
             Status
           </div>
@@ -375,7 +375,7 @@ export default function Investigations({ transactions, investigations, onChanged
             className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
               filter === 'all'
                 ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                : 'bg-white text-ink-soft border-rule-strong hover:border-rule-strong'
             }`}
           >
             All<span className="ml-1.5 text-xs opacity-70">({latestPerTx.length})</span>
@@ -390,7 +390,7 @@ export default function Investigations({ transactions, investigations, onChanged
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                   active
                     ? `${meta.classes} ring-2 ring-offset-1 ring-slate-200`
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                    : 'bg-white text-ink-soft border-rule-strong hover:border-rule-strong'
                 }`}
               >
                 {meta.label}
@@ -401,7 +401,7 @@ export default function Investigations({ transactions, investigations, onChanged
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold uppercase tracking-wider mr-2">
+          <div className="flex items-center gap-2 text-xs text-ink-mute font-semibold uppercase tracking-wider mr-2">
             <UserCircle2 className="w-3.5 h-3.5" />
             Reviewer
           </div>
@@ -415,8 +415,8 @@ export default function Investigations({ transactions, investigations, onChanged
                 onClick={() => setAssigneeFilter(opt)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                   active
-                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 ring-2 ring-offset-1 ring-slate-200'
-                    : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                    ? 'bg-paper-deep text-vermillion border-rule-strong ring-2 ring-offset-1 ring-slate-200'
+                    : 'bg-white text-ink-soft border-rule-strong hover:border-rule-strong'
                 }`}
               >
                 {label}
@@ -429,7 +429,7 @@ export default function Investigations({ transactions, investigations, onChanged
 
       {/* Bulk action bar */}
       {selectedIds.size > 0 && (
-        <div className="bg-slate-900 text-white rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-lg">
+        <div className="bg-slate-900 text-white rounded-none p-4 flex flex-wrap items-center gap-3 shadow-lg">
           <span className="text-sm font-semibold">
             {selectedIds.size} case{selectedIds.size === 1 ? '' : 's'} selected
           </span>
@@ -484,7 +484,7 @@ export default function Investigations({ transactions, investigations, onChanged
 
       {/* Select-all toggle */}
       {filtered.length > 0 && (
-        <label className="inline-flex items-center gap-2 text-xs text-slate-600 font-medium cursor-pointer select-none">
+        <label className="inline-flex items-center gap-2 text-xs text-ink-soft font-medium cursor-pointer select-none">
           <input
             type="checkbox"
             checked={selectedIds.size === filtered.length && filtered.length > 0}
@@ -514,12 +514,12 @@ export default function Investigations({ transactions, investigations, onChanged
           return (
             <div
               key={inv.id}
-              className={`bg-white rounded-2xl card-shadow overflow-hidden transition-shadow ${
+              className={`bg-white rounded-none card-shadow overflow-hidden transition-shadow ${
                 isSelected ? 'ring-2 ring-blue-500' : ''
               }`}
             >
               {/* Header */}
-              <div className="px-6 py-4 border-b border-slate-200 bg-slate-50/60 flex flex-wrap items-start justify-between gap-3">
+              <div className="px-6 py-4 border-b border-rule-strong bg-paper-deep/60 flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
@@ -533,7 +533,7 @@ export default function Investigations({ transactions, investigations, onChanged
                   </div>
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-base font-bold text-slate-900">
+                      <h3 className="text-base font-bold text-ink">
                         Case #{caseDisplayId(inv.id)}
                       </h3>
                       <span
@@ -544,18 +544,18 @@ export default function Investigations({ transactions, investigations, onChanged
                       </span>
                       {tx && <TypologyChips typologies={classifyTransaction(tx)} size="xs" />}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-ink-mute mt-0.5">
                       Transaction #{inv.transaction_id} · Opened {formatRelative(inv.created_at)}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
-                      <UserCircle2 className="w-4 h-4 text-slate-400" />
+                      <UserCircle2 className="w-4 h-4 text-ink-mute" />
                       <select
                         id={`assignee-${inv.id}`}
                         name={`assignee_${inv.id}`}
                         aria-label={`Assignee for case ${inv.id}`}
                         value={assignee}
                         onChange={(e) => changeAssignee(inv.id, e.target.value as AnalystName)}
-                        className="text-xs font-semibold bg-white border border-slate-200 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        className="text-xs font-semibold bg-white border border-rule-strong rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-ink cursor-pointer"
                       >
                         {ANALYSTS.map((a) => (
                           <option key={a} value={a}>
@@ -569,7 +569,7 @@ export default function Investigations({ transactions, investigations, onChanged
 
                 {/* Disposition actions */}
                 <div className="flex items-center gap-2 flex-wrap">
-                  {isSaving && <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />}
+                  {isSaving && <Loader2 className="w-4 h-4 text-vermillion animate-spin" />}
                   {inv.investigation_status !== 'sar_filed' && (
                     <button
                       onClick={() => openSarModal(inv)}
@@ -593,7 +593,7 @@ export default function Investigations({ transactions, investigations, onChanged
                     <button
                       onClick={() => updateStatus(inv, 'cleared')}
                       disabled={isSaving}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-paper-deep text-ink-soft border border-rule-strong transition-colors disabled:opacity-50"
                     >
                       Clear
                     </button>
@@ -602,7 +602,7 @@ export default function Investigations({ transactions, investigations, onChanged
                     <button
                       onClick={() => updateStatus(inv, 'open')}
                       disabled={isSaving}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-paper-deep text-ink-soft border border-rule-strong transition-colors disabled:opacity-50"
                     >
                       Reopen
                     </button>
@@ -614,7 +614,7 @@ export default function Investigations({ transactions, investigations, onChanged
                         recordEvent('case_printed', { case_id: caseDisplayId(inv.id) });
                       }}
                       title="Open printable case file (Save as PDF from print dialog)"
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white hover:bg-paper-deep text-ink-soft border border-rule-strong transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
                     >
                       <Printer className="w-3.5 h-3.5" />
                       Print case file
@@ -628,7 +628,7 @@ export default function Investigations({ transactions, investigations, onChanged
                 <div className="px-6 py-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Transaction details */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Transaction</h4>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Transaction</h4>
                     <DetailRow label="Type" value={tx.transaction_type} />
                     <DetailRow
                       label="Amount"
@@ -636,7 +636,7 @@ export default function Investigations({ transactions, investigations, onChanged
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })} ${tx.currency}`}
-                      valueClass="text-slate-900 font-semibold"
+                      valueClass="text-ink font-semibold"
                     />
                     <ClickableAccountRow
                       label="Sender"
@@ -662,12 +662,12 @@ export default function Investigations({ transactions, investigations, onChanged
 
                   {/* Risk indicators */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Risk Indicators</h4>
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-mute">Risk Indicators</h4>
+                    <div className="bg-paper-deep border border-rule-strong rounded-lg p-4">
                       <div className="flex items-baseline justify-between mb-2">
-                        <span className="text-xs text-slate-500 font-medium">Risk Score</span>
+                        <span className="text-xs text-ink-mute font-medium">Risk Score</span>
                         <span
-                          className={`text-2xl font-extrabold ${
+                          className={`text-2xl font-display font-semibold ${
                             tx.risk_score >= 80
                               ? 'text-red-600'
                               : tx.risk_score >= 60
@@ -676,10 +676,10 @@ export default function Investigations({ transactions, investigations, onChanged
                           }`}
                         >
                           {tx.risk_score}
-                          <span className="text-sm text-slate-400 font-normal">/100</span>
+                          <span className="text-sm text-ink-mute font-normal">/100</span>
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-paper-shadow rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${
                             tx.risk_score >= 80
@@ -695,21 +695,21 @@ export default function Investigations({ transactions, investigations, onChanged
                     <DetailRow
                       label="Auto-flagged"
                       value={tx.is_flagged ? 'Yes' : 'No'}
-                      valueClass={tx.is_flagged ? 'text-red-700 font-semibold' : 'text-slate-600'}
+                      valueClass={tx.is_flagged ? 'text-red-700 font-semibold' : 'text-ink-soft'}
                     />
                   </div>
 
                   {/* AI summary */}
-                  <div className="space-y-3 lg:border-l lg:border-slate-200 lg:pl-6">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                  <div className="space-y-3 lg:border-l lg:border-rule-strong lg:pl-6">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-ink-mute flex items-center gap-1.5">
                       <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
                       AI Investigation Summary
                     </h4>
-                    <p className="text-sm text-slate-700 leading-relaxed">{inv.ai_summary}</p>
+                    <p className="text-sm text-ink-soft leading-relaxed">{inv.ai_summary}</p>
                   </div>
                 </div>
               ) : (
-                <div className="px-6 py-5 text-sm text-slate-500 italic">
+                <div className="px-6 py-5 text-sm text-ink-mute italic">
                   Underlying transaction record not available.
                 </div>
               )}
@@ -722,14 +722,14 @@ export default function Investigations({ transactions, investigations, onChanged
                       open={sanctionsOpen}
                       onClick={() => toggleSanctionsPanel(inv.id)}
                       Icon={Shield}
-                      iconColor="text-blue-700"
+                      iconColor="text-vermillion"
                       label="Sanctions screening"
                     />
                     <PanelToggleButton
                       open={openExplain.has(inv.id)}
                       onClick={() => toggleExplain(inv.id)}
                       Icon={BrainCircuit}
-                      iconColor="text-indigo-700"
+                      iconColor="text-vermillion"
                       label="Why was this flagged?"
                     />
                     <PanelToggleButton
@@ -753,9 +753,9 @@ export default function Investigations({ transactions, investigations, onChanged
 
               {/* Analyst notes */}
               <div className="px-6 pb-3">
-                <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/60">
+                <div className="border border-rule-strong rounded-lg p-4 bg-paper-deep/60">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs uppercase tracking-wider font-semibold text-slate-500 flex items-center gap-1.5">
+                    <label className="text-xs uppercase tracking-wider font-semibold text-ink-mute flex items-center gap-1.5">
                       <StickyNote className="w-3.5 h-3.5 text-amber-600" />
                       Analyst notes
                     </label>
@@ -769,7 +769,7 @@ export default function Investigations({ transactions, investigations, onChanged
                       <button
                         onClick={() => commitNote(inv.id)}
                         disabled={!noteDirty}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-white border border-rule-strong text-ink-soft hover:bg-paper-deep font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <Save className="w-3 h-3" />
                         Save note
@@ -781,7 +781,7 @@ export default function Investigations({ transactions, investigations, onChanged
                     onChange={(e) => setDraftNote(inv.id, e.target.value)}
                     placeholder="Document your findings, decisions and next steps for the audit trail…"
                     rows={2}
-                    className="w-full bg-white border border-slate-200 rounded-md px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y min-h-[60px]"
+                    className="w-full bg-white border border-rule-strong rounded-md px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-ink resize-y min-h-[60px]"
                   />
                 </div>
               </div>
@@ -790,14 +790,14 @@ export default function Investigations({ transactions, investigations, onChanged
               <div className="px-6 pb-5">
                 <button
                   onClick={() => toggleTimeline(inv.id)}
-                  className="text-xs font-semibold text-slate-700 hover:text-slate-900 inline-flex items-center gap-1.5 mb-2"
+                  className="text-xs font-semibold text-ink-soft hover:text-ink inline-flex items-center gap-1.5 mb-2"
                 >
-                  <History className="w-3.5 h-3.5 text-slate-500" />
+                  <History className="w-3.5 h-3.5 text-ink-mute" />
                   {timelineOpen ? 'Hide' : 'Show'} audit timeline
-                  <span className="text-slate-400 font-normal">({auditEvents.length} events)</span>
+                  <span className="text-ink-mute font-normal">({auditEvents.length} events)</span>
                 </button>
                 {timelineOpen && (
-                  <div className="border border-slate-200 rounded-lg p-4 bg-white">
+                  <div className="border border-rule-strong rounded-lg p-4 bg-white">
                     <AuditTimeline events={auditEvents} />
                   </div>
                 )}
@@ -838,9 +838,9 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-xs text-slate-500 font-medium">{label}</span>
+      <span className="text-xs text-ink-mute font-medium">{label}</span>
       <span
-        className={`text-sm text-slate-700 text-right ${mono ? 'font-mono text-xs' : ''} ${valueClass || ''}`}
+        className={`text-sm text-ink-soft text-right ${mono ? 'font-mono text-xs' : ''} ${valueClass || ''}`}
       >
         {value}
       </span>
@@ -859,17 +859,17 @@ function ClickableAccountRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <span className="text-xs text-slate-500 font-medium">{label}</span>
+      <span className="text-xs text-ink-mute font-medium">{label}</span>
       {onInspect ? (
         <button
           onClick={() => onInspect(account)}
-          className="text-xs font-mono text-blue-700 hover:text-blue-900 hover:underline text-right"
+          className="text-xs font-mono text-vermillion hover:text-oxblood hover:underline text-right"
           title="View customer risk profile"
         >
           {account}
         </button>
       ) : (
-        <span className="text-xs font-mono text-slate-700 text-right">{account}</span>
+        <span className="text-xs font-mono text-ink-soft text-right">{account}</span>
       )}
     </div>
   );
@@ -894,7 +894,7 @@ function PanelToggleButton({
       className={`px-3 py-1.5 rounded-lg text-xs font-semibold border inline-flex items-center gap-1.5 transition-colors ${
         open
           ? 'bg-slate-900 text-white border-slate-900'
-          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+          : 'bg-white text-ink-soft border-rule-strong hover:bg-paper-deep'
       }`}
     >
       <Icon className={`w-3.5 h-3.5 ${open ? 'text-white' : iconColor}`} />

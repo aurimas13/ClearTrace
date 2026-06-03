@@ -57,11 +57,11 @@ function PartyCard({
   const meta = STATUS_META[screening.overall];
   const Icon = meta.Icon;
   return (
-    <div className="border border-slate-200 rounded-lg bg-white">
-      <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
+    <div className="border border-rule-strong rounded-lg bg-white">
+      <div className="px-3 py-2 border-b border-rule flex items-center justify-between">
         <div className="min-w-0">
-          <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">{title}</div>
-          <div className="text-xs font-mono text-slate-700 truncate">{account}</div>
+          <div className="text-[10px] uppercase tracking-wider font-bold text-ink-mute">{title}</div>
+          <div className="text-xs font-mono text-ink-soft truncate">{account}</div>
         </div>
         <span
           className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border uppercase tracking-wider ${meta.chip}`}
@@ -80,7 +80,7 @@ function PartyCard({
               className="flex items-center justify-between gap-2 text-[11px]"
               title={r.notes || ''}
             >
-              <span className="flex items-center gap-1.5 text-slate-600 font-medium truncate">
+              <span className="flex items-center gap-1.5 text-ink-soft font-medium truncate">
                 <RIcon className={`w-3 h-3 ${rMeta.accent} shrink-0`} />
                 {r.listLabel}
               </span>
@@ -91,7 +91,7 @@ function PartyCard({
           );
         })}
         {(screening.pep || screening.adverseMedia > 0) && (
-          <div className="pt-2 mt-1 border-t border-slate-100 flex flex-wrap gap-1.5">
+          <div className="pt-2 mt-1 border-t border-rule flex flex-wrap gap-1.5">
             {screening.pep && (
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                 <Crown className="w-2.5 h-2.5" />
@@ -99,7 +99,7 @@ function PartyCard({
               </span>
             )}
             {screening.adverseMedia > 0 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-paper-deep text-ink-soft border border-rule-strong">
                 <Newspaper className="w-2.5 h-2.5" />
                 {screening.adverseMedia} adverse media
               </span>

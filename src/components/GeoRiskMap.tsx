@@ -89,11 +89,11 @@ export default function GeoRiskMap({ transactions }: GeoRiskMapProps) {
   }, [corridors]);
 
   return (
-    <div className="bg-white rounded-2xl card-shadow overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
+    <div className="bg-white rounded-none card-shadow overflow-hidden">
+      <div className="px-5 py-4 border-b border-rule-strong bg-paper-deep flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <Globe className="w-4 h-4 text-blue-700" />
-          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+          <Globe className="w-4 h-4 text-vermillion" />
+          <h3 className="text-sm font-bold text-ink uppercase tracking-wider">
             Cross-border risk corridors
           </h3>
         </div>
@@ -200,7 +200,7 @@ export default function GeoRiskMap({ transactions }: GeoRiskMapProps) {
           })}
         </svg>
       </div>
-      <div className="px-5 py-2 border-t border-slate-100 bg-slate-50 text-[11px] text-slate-500">
+      <div className="px-5 py-2 border-t border-rule bg-paper-deep text-[11px] text-ink-mute">
         Equirectangular projection · arc thickness ∝ log corridor volume · pulsing markers indicate FATF
         monitored or call-for-action jurisdictions touched in the current dataset.
       </div>
@@ -212,7 +212,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-1.5">
       <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-      <span className="text-slate-600 font-medium">{label}</span>
+      <span className="text-ink-soft font-medium">{label}</span>
     </div>
   );
 }
