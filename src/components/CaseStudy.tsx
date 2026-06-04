@@ -57,8 +57,9 @@ export default function CaseStudy({ onBack, onEnterDemo }: CaseStudyProps) {
           </h1>
           <div className="hairline-thin max-w-[6rem] mb-5" />
           <p className="font-serif text-xl text-ink-soft leading-relaxed max-w-3xl">
-            An AI-powered AML investigation platform that reduces manual transaction review time by 50%
-            through LLM-orchestrated analysis, network visualization, and automated SAR draft generation.
+            An AI-assisted AML investigation platform that triages alerts, maps counterparty networks,
+            and drafts Suspicious Activity Reports through LLM-orchestrated analysis — keeping a human
+            analyst in control of every decision.
           </p>
           <div className="flex flex-wrap items-center gap-4 mt-8">
             <button
@@ -85,15 +86,15 @@ export default function CaseStudy({ onBack, onEnterDemo }: CaseStudyProps) {
           <SectionHeader icon={AlertTriangle} color="red" title="The Problem" />
           <div className="bg-red-50/60 border border-red-200 rounded-none p-6 md:p-8">
             <p className="text-lg text-ink-soft leading-relaxed mb-6">
-              Financial crime compliance teams are overwhelmed. Fraud analysts spend{' '}
-              <span className="text-ink font-semibold">60%+ of their time</span> on manual
-              transaction review and Suspicious Activity Report (SAR) preparation — repetitive work
-              that delays investigations and increases regulatory risk.
+              Financial crime compliance teams are overwhelmed. Rules-based monitoring generates far
+              more alerts than analysts can work, and a large share turn out to be false positives.
+              The time spent on manual transaction review and Suspicious Activity Report (SAR)
+              preparation is repetitive, slow, and pulls attention away from the cases that matter.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <ProblemStat value="60%+" label="Time spent on manual review" />
-              <ProblemStat value="3+ hrs" label="Average time per SAR draft" />
-              <ProblemStat value="85%" label="False positive rate in alerts" />
+              <ProblemStat value="Alert fatigue" label="High false-positive volume buries genuine risk" />
+              <ProblemStat value="Manual SAR prep" label="Drafting reports by hand is slow and repetitive" />
+              <ProblemStat value="Fragmented context" label="Money-flow relationships are hard to see across systems" />
             </div>
           </div>
         </section>
@@ -177,19 +178,19 @@ export default function CaseStudy({ onBack, onEnterDemo }: CaseStudyProps) {
           </div>
         </section>
 
-        {/* Outcomes */}
+        {/* What it delivers */}
         <section className="mb-16">
-          <SectionHeader icon={Target} color="green" title="Outcomes" />
+          <SectionHeader icon={Target} color="green" title="What It Delivers" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <OutcomeStat value="50%" label="Reduction in manual review time" color="emerald" />
-            <OutcomeStat value="3→1" label="Hours to generate SAR drafts" color="blue" />
-            <OutcomeStat value="67%" label="Faster investigation cycle" color="cyan" />
+            <OutcomeStat value="6" label="AML typologies screened per transaction" color="emerald" />
+            <OutcomeStat value="0–100" label="Explainable risk score on every wire" color="blue" />
+            <OutcomeStat value="100%" label="Human-in-the-loop on every disposition" color="cyan" />
           </div>
           <div className="space-y-3">
-            <OutcomeItem text="Automated plain-English investigation summaries citing specific AML typologies" />
+            <OutcomeItem text="Plain-English investigation summaries that cite specific AML typologies" />
             <OutcomeItem text="Multi-hop network visualization reveals circular funding, smurfing, and layering patterns" />
-            <OutcomeItem text="AI-generated SAR drafts with full human approval workflow" />
-            <OutcomeItem text="Investigation records automatically persisted to Supabase for audit trail" />
+            <OutcomeItem text="AI-generated SAR drafts that always pass through a human approval workflow" />
+            <OutcomeItem text="Investigation records and audit events persisted to Supabase for a defensible trail" />
           </div>
         </section>
 
@@ -200,12 +201,12 @@ export default function CaseStudy({ onBack, onEnterDemo }: CaseStudyProps) {
             <ScreenCaption
               num={1}
               title="Landing Page"
-              caption="Hero with problem statement, key metrics, and interactive dashboard preview. Visitors understand the product's value proposition within 5 seconds."
+              caption="Hero with problem statement, the system at a glance, and an interactive dashboard preview that communicates the product's value proposition at a glance."
             >
               <div className="bg-white rounded-lg p-6 border border-rule-strong">
                 <div className="text-center mb-4">
                   <div className="text-2xl font-display font-semibold text-ink mb-1">Stop Chasing False Positives.</div>
-                  <div className="text-sm text-ink-soft">Fraud analysts spend 60%+ of their time on manual review...</div>
+                  <div className="text-sm text-ink-soft">Triage alerts, map the network, and draft the filing — analyst keeps the judgement...</div>
                 </div>
                 <div className="flex justify-center gap-3">
                   <div className="px-4 py-2 bg-gradient-to-r from-blue-700 to-indigo-700 rounded-lg text-white text-xs font-semibold">Enter Live Demo</div>

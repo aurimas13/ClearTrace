@@ -149,9 +149,9 @@ export default function LandingPage({ onEnterDemo, onCaseStudy }: LandingPagePro
   /* ---- Content ---- */
 
   const stats = [
-    { value: '60%', kicker: 'of an analyst\u2019s week', detail: 'is currently consumed by manual transaction review and SAR preparation, before any judgement is exercised.' },
-    { value: '3 \u2192 1', kicker: 'hours per draft',     detail: 'compressed by structured AI counsel, leaving the analyst to do what they\u2019re paid for: decide.' },
-    { value: '67%',   kicker: 'faster cycle',         detail: 'from alert to disposition, measured against the prior generation of rules-only systems.' },
+    { value: '6', kicker: 'AML typologies', detail: 'screened on every wire — structuring, smurfing, layering, round-tripping, velocity and trade-based laundering.' },
+    { value: '0\u2013100', kicker: 'risk score', detail: 'a deterministic, explainable score assigned to each transaction, with the reasoning shown rather than hidden in a black box.' },
+    { value: '100%', kicker: 'human-in-the-loop', detail: 'every disposition and SAR is reviewed and filed by an analyst. The model advises; it never decides.' },
   ];
 
   const credits = [

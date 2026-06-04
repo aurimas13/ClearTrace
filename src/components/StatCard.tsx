@@ -6,6 +6,8 @@ interface StatCardProps {
   change?: string;
   icon: LucideIcon;
   trend?: 'up' | 'down';
+  /** Honest scope/definition line shown in the footer. */
+  note?: string;
 }
 
 /**
@@ -13,7 +15,7 @@ interface StatCardProps {
  * Paper card with hard ink border + 4px hard-offset shadow (no blur),
  * Fraunces display numerals, smallcaps title, vermillion change indicator.
  */
-export default function StatCard({ title, value, change, icon: Icon, trend }: StatCardProps) {
+export default function StatCard({ title, value, change, icon: Icon, trend, note }: StatCardProps) {
   return (
     <article className="group relative bg-paper border border-ink shadow-[4px_4px_0_0_var(--ink)] hover:shadow-[6px_6px_0_0_var(--ink)] hover:-translate-y-0.5 hover:-translate-x-0.5 transition-all p-5 font-serif">
       {/* Top row — section marker + change pill */}
@@ -51,7 +53,7 @@ export default function StatCard({ title, value, change, icon: Icon, trend }: St
       {/* Footer rule + scope line */}
       <div className="hairline-thin mt-3 mb-2" />
       <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-mute">
-        Vs. prior 24h
+        {note ?? 'Current dataset'}
       </p>
     </article>
   );

@@ -470,8 +470,8 @@ function App() {
                             `${filteredTransactions.length} transaction(s) saved as CSV with risk profile.`
                           );
                         }
-                      } catch (err: any) {
-                        toast.error('Export failed', err?.message || 'Could not generate the file.');
+                      } catch (err) {
+                        toast.error('Export failed', err instanceof Error ? err.message : 'Could not generate the file.');
                       }
                     }}
                     title="Export current view as CSV"
@@ -500,23 +500,20 @@ function App() {
                 <StatCard
                   title="High Risk Alerts"
                   value={highRiskCount}
-                  change="+12%"
+                  note="Risk score ≥ 80"
                   icon={AlertTriangle}
-                  trend="up"
                 />
                 <StatCard
                   title="Pending Review"
                   value={pendingReviewCount}
-                  change="-5%"
+                  note="Flagged, not yet investigated"
                   icon={FileCheck}
-                  trend="down"
                 />
                 <StatCard
                   title="Avg Risk Score"
                   value={avgRiskScore}
-                  change="+3%"
+                  note="Across loaded transactions"
                   icon={TrendingUp}
-                  trend="up"
                 />
               </div>
             </div>

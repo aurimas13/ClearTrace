@@ -62,8 +62,8 @@ export default function TransactionList({
         currency: tx.currency,
       });
       toast.success(`Investigation opened for #${tx.id}`, 'Audit event logged. Review summary in the modal.');
-    } catch (err: any) {
-      toast.error('AI analysis failed', err?.message || 'See console for details.');
+    } catch (err) {
+      toast.error('AI analysis failed', err instanceof Error ? err.message : 'See console for details.');
     } finally {
       setAnalyzingId(null);
     }

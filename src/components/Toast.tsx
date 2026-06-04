@@ -64,7 +64,7 @@ const KIND_META: Record<
   info: {
     Icon: Info,
     ring: 'ring-blue-200',
-    bar: 'bg-paper-deep0',
+    bar: 'bg-vermillion',
     iconColor: 'text-vermillion',
     bg: 'bg-white',
   },

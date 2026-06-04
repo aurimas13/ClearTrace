@@ -163,7 +163,7 @@ export default function GeoRiskMap({ transactions }: GeoRiskMapProps) {
                     fill={color}
                     fillOpacity={0.4}
                     className="geo-pulse"
-                    style={{ r: 3 } as any}
+                    style={{ ['r' as never]: 3 }}
                   />
                 )}
                 <circle

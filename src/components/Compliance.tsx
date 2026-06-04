@@ -164,14 +164,14 @@ export default function Compliance({ transactions, investigations }: ComplianceP
               label="Flagged transactions"
               count={flagged}
               max={flagged}
-              color="bg-paper-deep0"
+              color="bg-ink"
               icon={Activity}
             />
             <FunnelRow
               label="Cases opened"
               count={investigated}
               max={flagged}
-              color="bg-paper-deep0"
+              color="bg-ink-soft"
               icon={ListChecks}
             />
             <FunnelRow

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
+import type { CSSProperties } from 'react';
 import {
   ReactFlow,
   Background,
@@ -147,8 +148,8 @@ export default function NetworkGraph({ transactions, selectedAccount, onSelectAc
           opacity: inFocus && touchesSelected ? 1 : 0.1,
           strokeWidth:
             touchesSelected
-              ? Math.max(2.5, ((edge.style as any)?.strokeWidth || 1.5) + 1)
-              : (edge.style as any)?.strokeWidth || 1.5,
+              ? Math.max(2.5, (Number((edge.style as CSSProperties)?.strokeWidth) || 1.5) + 1)
+              : Number((edge.style as CSSProperties)?.strokeWidth) || 1.5,
         },
       };
     });
