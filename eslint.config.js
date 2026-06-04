@@ -24,5 +24,12 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
     },
+  },
+  {
+    // Serverless functions run in Node, not the browser.
+    files: ['api/**/*.ts'],
+    languageOptions: {
+      globals: globals.node,
+    },
   }
 );

@@ -3,21 +3,19 @@ import type { SupabaseTransaction } from '../components/TransactionList';
 import { addAuditEvent, getCurrentAnalyst } from './sessionStore';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HOW TO GET YOUR CLAUDE API KEY:
+// CLAUDE INTEGRATION
 //
-// 1. Go to https://console.anthropic.com/
-// 2. Sign up or log in to your Anthropic account.
-// 3. Navigate to "API Keys" in the dashboard sidebar.
-// 4. Click "Create Key", give it a name, and copy the key.
-// 5. Add it to your .env file as:
-//      VITE_CLAUDE_API_KEY=sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxx
+// The Claude API key is NEVER exposed to the browser. AI requests are proxied
+// through a Vercel serverless function (`/api/analyze`) that holds the key in
+// the server environment (`CLAUDE_API_KEY`). See `api/analyze.ts`.
 //
-// ⚠️  IMPORTANT: Calling the Claude API directly from the browser exposes your
-//     API key. For production, proxy requests through a backend / Edge Function.
+// To enable real AI in production, set CLAUDE_API_KEY in your Vercel project
+// (Settings → Environment Variables) — no `VITE_` prefix. If the proxy is
+// unavailable (e.g. `npm run dev`, which doesn't run serverless functions, or
+// no key configured), the client gracefully falls back to a local summary.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY as string | undefined;
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+const ANALYZE_ENDPOINT = '/api/analyze';
 
 /**
  * Calls the Claude API to analyze a transaction.
@@ -52,38 +50,27 @@ function generateFallbackSummary(tx: SupabaseTransaction): string {
 }
 
 async function callClaudeAPI(prompt: string, tx: SupabaseTransaction): Promise<string> {
-  if (!CLAUDE_API_KEY) {
-    await new Promise((r) => setTimeout(r, 1500));
-    return generateFallbackSummary(tx);
-  }
-
   try {
-    const response = await fetch(CLAUDE_API_URL, {
+    const response = await fetch(ANALYZE_ENDPOINT, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
     });
 
     if (!response.ok) {
-      console.warn('Claude API error, falling back to local analysis:', response.status);
-      await new Promise((r) => setTimeout(r, 800));
+      // 404 locally (no serverless runtime under `vite`), or 503 when the key
+      // isn't configured — fall back to the deterministic local summary.
+      console.warn('AI proxy returned', response.status, '— using local analysis.');
+      await new Promise((r) => setTimeout(r, 600));
       return generateFallbackSummary(tx);
     }
 
-    const data = await response.json();
-    return data.content?.[0]?.text ?? generateFallbackSummary(tx);
+    const data = (await response.json()) as { summary?: string };
+    const summary = data.summary?.trim();
+    return summary ? summary : generateFallbackSummary(tx);
   } catch (err) {
-    console.warn('Claude API unreachable, falling back to local analysis:', err);
-    await new Promise((r) => setTimeout(r, 800));
+    console.warn('AI proxy unreachable, falling back to local analysis:', err);
+    await new Promise((r) => setTimeout(r, 600));
     return generateFallbackSummary(tx);
   }
 }
