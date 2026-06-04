@@ -14,9 +14,20 @@ npm install
 cp .env.example .env   # then fill in your keys
 npm run dev            # Vite dev server (serverless /api routes are NOT served here)
 ```
-The AI proxy only runs on Vercel (or via `vercel dev`). Under `npm run dev`, AI
-requests fall back to a deterministic local summary, so the demo stays fully
-functional offline.
+Under `npm run dev`, AI requests fall back to a deterministic local summary, so
+the demo stays fully functional offline.
+
+To exercise the real `/api/analyze` proxy locally (Vite + serverless functions
+together), use the Vercel CLI instead:
+```bash
+npm run dev:api        # runs `vercel dev`
+```
+The first run links the project and prompts to pull environment variables;
+`CLAUDE_API_KEY` from `.env` (or `vercel env pull`) is then used server-side.
+
+The proxy applies a best-effort per-IP rate limit (20 requests/minute per warm
+instance). For a hard, cross-instance limit, back it with a shared store such as
+Vercel KV / Upstash.
 
 ## Environment Variables
 | Variable | Scope | Notes |

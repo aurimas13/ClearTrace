@@ -16,10 +16,45 @@ const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-4-20250514';
 const MAX_PROMPT_CHARS = 4000;
 
+// ── Best-effort in-memory rate limiter ──────────────────────────────────────
+// Fixed window per client IP. This protects a warm serverless instance from
+// bursts/abuse; it is not a global guarantee (instances are ephemeral and
+// horizontally scaled). For hard limits, front this with a shared store
+// (e.g. Upstash/Vercel KV) — kept dependency-free here on purpose.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 20;
+const hits = new Map<string, { count: number; resetAt: number }>();
+
+function rateLimit(ip: string): { ok: boolean; retryAfter: number } {
+  const now = Date.now();
+  const entry = hits.get(ip);
+  if (!entry || now >= entry.resetAt) {
+    hits.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return { ok: true, retryAfter: 0 };
+  }
+  entry.count += 1;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return { ok: false, retryAfter: Math.ceil((entry.resetAt - now) / 1000) };
+  }
+  return { ok: true, retryAfter: 0 };
+}
+
+function clientIp(req: VercelRequest): string {
+  const fwd = req.headers['x-forwarded-for'];
+  const raw = Array.isArray(fwd) ? fwd[0] : fwd;
+  return (raw?.split(',')[0].trim()) || req.socket?.remoteAddress || 'unknown';
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { ok, retryAfter } = rateLimit(clientIp(req));
+  if (!ok) {
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: 'Too many requests', retryAfter });
   }
 
   const apiKey = process.env.CLAUDE_API_KEY;
